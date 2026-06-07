@@ -112,3 +112,16 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );activity_logscategoriescustomer_profiletask_messagestask_offerstasksusersworker_profile
+
+ALTER TABLE worker_profile
+ADD COLUMN full_name VARCHAR(100) NOT NULL,
+ADD COLUMN mobile VARCHAR(20) NOT NULL UNIQUE,
+ADD COLUMN permanent_location VARCHAR(255);
+
+
+ALTER TABLE customer_profile
+ADD COLUMN full_name VARCHAR(100) NOT NULL,
+ADD COLUMN mobile VARCHAR(20) NOT NULL UNIQUE,
+ADD COLUMN profile_image VARCHAR(255),
+ADD COLUMN nid_number VARCHAR(50),
+ADD COLUMN permanent_location VARCHAR(255);
