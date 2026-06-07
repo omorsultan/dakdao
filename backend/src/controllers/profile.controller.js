@@ -1,12 +1,10 @@
+// controllers/profile.controller.js
 const pool = require("../config/db");
 
 
 // CREATE WORKER PROFILE
-
 exports.createWorkerProfile = async (req, res) => {
-
     try {
-
         const {
             full_name,
             mobile,
@@ -17,8 +15,7 @@ exports.createWorkerProfile = async (req, res) => {
             longitude
         } = req.body;
 
-        const profileImage =
-            req.file ? req.file.filename : null;
+        const profileImage = req.file ? req.file.filename : null;
 
         await pool.query(
             `
@@ -42,10 +39,10 @@ exports.createWorkerProfile = async (req, res) => {
                 mobile,
                 nid_number,
                 profileImage,
-                permanent_location,
-                skills,
-                latitude,
-                longitude
+                permanent_location || null,
+                skills || null,
+                latitude  || null,
+                longitude || null
             ]
         );
 
@@ -55,21 +52,14 @@ exports.createWorkerProfile = async (req, res) => {
         });
 
     } catch (error) {
-
-        res.status(500).json({
-            message: error.message
-        });
+        res.status(500).json({ message: error.message });
     }
 };
 
 
-
 // CREATE CUSTOMER PROFILE
-
 exports.createCustomerProfile = async (req, res) => {
-
     try {
-
         const {
             full_name,
             mobile,
@@ -79,8 +69,7 @@ exports.createCustomerProfile = async (req, res) => {
             longitude
         } = req.body;
 
-        const profileImage =
-            req.file ? req.file.filename : null;
+        const profileImage = req.file ? req.file.filename : null;
 
         await pool.query(
             `
@@ -89,8 +78,8 @@ exports.createCustomerProfile = async (req, res) => {
                 user_id,
                 full_name,
                 mobile,
-                profile_image,
                 nid_number,
+                profile_image,
                 permanent_location,
                 latitude,
                 longitude
@@ -101,11 +90,11 @@ exports.createCustomerProfile = async (req, res) => {
                 req.user.id,
                 full_name,
                 mobile,
+                nid_number  || null,
                 profileImage,
-                nid_number,
-                permanent_location,
-                latitude,
-                longitude
+                permanent_location || null,
+                latitude  || null,
+                longitude || null
             ]
         );
 
@@ -115,9 +104,6 @@ exports.createCustomerProfile = async (req, res) => {
         });
 
     } catch (error) {
-
-        res.status(500).json({
-            message: error.message
-        });
+        res.status(500).json({ message: error.message });
     }
 };

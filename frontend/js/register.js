@@ -4,6 +4,7 @@ const form = document.getElementById("registerForm");
 form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
+    
 
     const userData = {
         name: document.getElementById("name").value,
@@ -11,11 +12,12 @@ form.addEventListener("submit", async (e) => {
         password: document.getElementById("password").value,
         role: document.getElementById("role").value
     };
+    
 
     try {
 
         const response = await fetch(
-            "http://localhost:5000/api/auth/register",
+          "http://localhost:5000/api/auth/register",
             {
                 method: "POST",
                 headers: {
@@ -36,4 +38,5 @@ form.addEventListener("submit", async (e) => {
             error.message;
 
     }
+    
 });

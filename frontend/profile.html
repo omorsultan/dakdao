@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f5f4f0;
+            --card: #ffffff;
+            --border: #e2e0d8;
+            --text: #1a1917;
+            --muted: #6b6963;
+            --accent: #1a1917;
+            --accent-hover: #3d3b37;
+            --input-bg: #fafaf8;
+            --disabled-bg: #f0efeb;
+            --error: #c0392b;
+            --success: #27ae60;
+            --worker-accent: #0f6e56;
+            --worker-light: #e1f5ee;
+            --customer-accent: #185fa5;
+            --customer-light: #e6f1fb;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .page-header {
+            max-width: 560px;
+            margin: 0 auto 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 10px;
+        }
+
+        .brand-mark svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .brand-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .logout-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.8rem;
+            color: var(--muted);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .logout-btn:hover { border-color: #aaa; color: var(--text); }
+
+        .wrapper {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.75rem 2rem;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+        }
+
+        /* Avatar + greeting */
+        .avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .avatar-wrap {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+        }
+
+        .avatar-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--disabled-bg);
+            border: 2px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .avatar-circle svg {
+            width: 28px;
+            height: 28px;
+            stroke: #b0ada7;
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .avatar-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 22px;
+            height: 22px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 2px solid var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-badge svg {
+            width: 10px;
+            height: 10px;
+            stroke: #fff;
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+
+        #profile_image { display: none; }
+
+        .avatar-info h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .avatar-info p {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-top: 0.2rem;
+        }
+
+        /* Role toggle */
+        .role-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.65rem 1rem;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: var(--input-bg);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .role-btn svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+        }
+
+        .role-btn.active[data-role="worker"] {
+            background: var(--worker-light);
+            border-color: var(--worker-accent);
+            color: var(--worker-accent);
+        }
+
+        .role-btn.active[data-role="customer"] {
+            background: var(--customer-light);
+            border-color: var(--customer-accent);
+            color: var(--customer-accent);
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        /* Fields */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .field {
+            margin-bottom: 0.85rem;
+        }
+
+        label.field-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap svg.field-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            stroke: var(--muted);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            pointer-events: none;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="tel"],
+        textarea {
+            width: 100%;
+            padding: 0.62rem 0.9rem 0.62rem 2.2rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--text);
+            box-shadow: 0 0 0 3px rgba(26,25,23,0.07);
+        }
+
+        input::placeholder, textarea::placeholder { color: #c0bdb7; }
+
+        input:disabled {
+            background: var(--disabled-bg);
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            padding-top: 0.65rem;
+        }
+
+        /* Worker-only field */
+        .worker-only {
+            display: block;
+        }
+
+        .worker-only.hidden {
+            display: none;
+        }
+
+        /* Location row */
+        .location-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.8rem;
+            color: var(--muted);
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.45rem 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            transition: border-color 0.15s;
+        }
+
+        .location-btn svg {
+            width: 13px;
+            height: 13px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .location-btn:hover { border-color: #aaa; color: var(--text); }
+
+        /* Submit */
+        .submit-btn {
+            width: 100%;
+            padding: 0.82rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1.25rem;
+            transition: background 0.15s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover { background: var(--accent-hover); }
+        .submit-btn:active { transform: scale(0.99); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #msg {
+            margin-top: 1rem;
+            font-size: 0.84rem;
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #msg.error { display: block; background: #fef2f2; color: var(--error); border: 1px solid #fecaca; }
+        #msg.success { display: block; background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.25rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="brand">
+        <div class="brand-mark">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <span class="brand-name">Dakdao</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+</div>
+
+<div class="wrapper">
+    <div class="card">
+
+        <!-- Avatar + Greeting -->
+        <div class="avatar-row">
+            <div class="avatar-wrap">
+                <div class="avatar-circle" onclick="document.getElementById('profile_image').click()">
+                    <img id="avatarPreview" alt="Profile">
+                    <svg id="avatarIcon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </div>
+                <div class="avatar-badge">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <input type="file" id="profile_image" accept="image/*">
+            </div>
+            <div class="avatar-info">
+                <h2 id="greetingName">Set up your profile</h2>
+                <p id="greetingMobile">Complete your details below</p>
+            </div>
+        </div>
+
+        <!-- Role Toggle -->
+        <p class="section-label">I am a</p>
+        <div class="role-toggle">
+            <button class="role-btn active" data-role="worker" onclick="setRole('worker')">
+                <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/></svg>
+                Worker
+            </button>
+            <button class="role-btn" data-role="customer" onclick="setRole('customer')">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Customer
+            </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Basic Info -->
+        <p class="section-label">Basic information</p>
+
+        <div class="field">
+            <label class="field-label">Full name</label>
+            <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="full_name" placeholder="Your full name">
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="field-label">Mobile number</label>
+            <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="#6b6963" stroke="none"/></svg>
+                <input type="tel" id="mobile" placeholder="01XXXXXXXXX" disabled>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="field-label">NID number</label>
+            <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                <input type="text" id="nid_number" placeholder="National ID number">
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Location -->
+        <p class="section-label">Location</p>
+
+        <div class="field">
+            <label class="field-label">Permanent address</label>
+            <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <input type="text" id="permanent_location" placeholder="Dhaka, Bangladesh">
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Latitude</label>
+                <div class="input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                    <input type="number" id="latitude" placeholder="23.8103" step="any">
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">Longitude</label>
+                <div class="input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                    <input type="number" id="longitude" placeholder="90.4125" step="any">
+                </div>
+            </div>
+        </div>
+
+        <button class="location-btn" onclick="getLocation()">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            Use my current location
+        </button>
+
+        <!-- Worker-only: Skills -->
+        <div class="worker-only" id="workerSection">
+            <div class="divider"></div>
+            <p class="section-label">Worker details</p>
+            <div class="field">
+                <label class="field-label">Skills</label>
+                <div class="input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" style="top:18px;transform:none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <textarea id="skills" placeholder="e.g. Plumbing, Electrical wiring, Carpentry" style="padding-left:2.2rem"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <button class="submit-btn" id="saveBtn" onclick="submitProfile()">
+            <span id="btnText">Save profile</span>
+            <div class="spinner" id="spinner"></div>
+        </button>
+
+        <p id="msg"></p>
+    </div>
+</div>
+
+<script>
+    // ── Role toggle ─────────────────────────────────────────────
+    let currentRole = "worker";
+
+    function setRole(role) {
+        currentRole = role;
+        document.querySelectorAll(".role-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.role === role);
+        });
+        const workerSection = document.getElementById("workerSection");
+        workerSection.classList.toggle("hidden", role !== "worker");
+    }
+
+    // ── Auth guard ──────────────────────────────────────────────
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!token || !user) {
+        window.location.href = "login.html";
+    }
+
+    // ── Pre-fill from localStorage ───────────────────────────────
+    if (user) {
+        document.getElementById("mobile").value = user.mobile || "";
+        document.getElementById("greetingName").textContent =
+            user.name ? `Hey, ${user.name.split(" ")[0]}` : "Set up your profile";
+        document.getElementById("greetingMobile").textContent =
+            user.mobile || "Complete your details below";
+
+        // Pre-select role if stored
+        if (user.role === "customer") setRole("customer");
+    }
+
+    // ── Avatar preview ───────────────────────────────────────────
+    document.getElementById("profile_image").addEventListener("change", function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById("avatarPreview");
+            const icon = document.getElementById("avatarIcon");
+            img.src = e.target.result;
+            img.style.display = "block";
+            icon.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ── Get current location ─────────────────────────────────────
+    function getLocation() {
+        if (!navigator.geolocation) {
+            showMsg("Geolocation not supported by your browser.", "error");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                document.getElementById("latitude").value  = pos.coords.latitude.toFixed(6);
+                document.getElementById("longitude").value = pos.coords.longitude.toFixed(6);
+            },
+            () => showMsg("Could not get location. Please enter manually.", "error")
+        );
+    }
+
+    // ── Message helper ───────────────────────────────────────────
+    function showMsg(text, type) {
+        const el = document.getElementById("msg");
+        el.textContent = text;
+        el.className = type;
+    }
+
+    // ── Submit ───────────────────────────────────────────────────
+    async function submitProfile() {
+        const btn     = document.getElementById("saveBtn");
+        const btnText = document.getElementById("btnText");
+        const spinner = document.getElementById("spinner");
+
+        btn.disabled = true;
+        btnText.style.display = "none";
+        spinner.style.display = "block";
+
+        const formData = new FormData();
+        formData.append("full_name",           document.getElementById("full_name").value);
+        formData.append("mobile",              document.getElementById("mobile").value);
+        formData.append("nid_number",          document.getElementById("nid_number").value);
+        formData.append("permanent_location",  document.getElementById("permanent_location").value);
+        formData.append("latitude",            document.getElementById("latitude").value);
+        formData.append("longitude",           document.getElementById("longitude").value);
+
+        if (currentRole === "worker") {
+            formData.append("skills", document.getElementById("skills").value);
+        }
+
+        const fileInput = document.getElementById("profile_image");
+        if (fileInput.files[0]) {
+            formData.append("profile_image", fileInput.files[0]);
+        }
+
+        const endpoint = currentRole === "worker"
+            ? "http://localhost:5000/api/profile/worker"
+            : "http://localhost:5000/api/profile/customer";
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showMsg("Profile saved successfully!", "success");
+            } else {
+                showMsg(data.message || "Something went wrong.", "error");
+            }
+        } catch (err) {
+            showMsg("Could not connect to server.", "error");
+        } finally {
+            btn.disabled = false;
+            btnText.style.display = "block";
+            spinner.style.display = "none";
+        }
+    }
+
+    // ── Logout ───────────────────────────────────────────────────
+    function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>

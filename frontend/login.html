@@ -1,41 +1,373 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login - Dakdao</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f5f4f0;
+            --card: #ffffff;
+            --border: #e2e0d8;
+            --text: #1a1917;
+            --muted: #6b6963;
+            --accent: #1a1917;
+            --accent-hover: #3d3b37;
+            --input-bg: #fafaf8;
+            --error: #c0392b;
+            --success: #27ae60;
+            --shadow: 0 2px 16px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 14px;
+            margin-bottom: 0.75rem;
+        }
+
+        .brand-mark svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .brand p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .field {
+            margin-bottom: 1.1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.45rem;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            stroke: var(--muted);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.6rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus {
+            border-color: var(--text);
+            box-shadow: 0 0 0 3px rgba(26,25,23,0.08);
+        }
+
+        input::placeholder { color: #b0ada7; }
+
+        .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-pass svg {
+            position: static;
+            transform: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.15s, transform 0.1s;
+            letter-spacing: 0.01em;
+        }
+
+        button[type="submit"]:hover { background: var(--accent-hover); }
+        button[type="submit"]:active { transform: scale(0.99); }
+
+        button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #message {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            padding: 0.65rem 0.9rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #message.error {
+            display: block;
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+        #message.success {
+            display: block;
+            background: #f0fdf4;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .footer-text a {
+            color: var(--text);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .footer-text a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
 
-    <h2>Login</h2>
+<div class="wrapper">
+    <div class="brand">
+        <div class="brand-mark">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+            </svg>
+        </div>
+        <h1>Dakdao</h1>
+        <p>Welcome back, sign in to continue</p>
+    </div>
 
-    <form id="loginForm">
+    <div class="card">
+        <form id="loginForm">
 
-        <input
-            type="text"
-            id="mobile"
-            placeholder="Mobile"
-            required
-        >
+            <div class="field">
+                <label for="mobile">Mobile number</label>
+                <div class="input-wrap">
+                    <svg viewBox="0 0 24 24" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <circle cx="12" cy="17" r="1" fill="currentColor"/>
+                    </svg>
+                    <input
+                        type="text"
+                        id="mobile"
+                        placeholder="01XXXXXXXXX"
+                        autocomplete="tel"
+                        required
+                    >
+                </div>
+            </div>
 
-        <br><br>
+            <div class="field">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <svg viewBox="0 0 24 24" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <button type="button" class="toggle-pass" id="togglePass" aria-label="Show password">
+                        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-        >
+            <button type="submit" id="loginBtn">
+                <span id="btnText">Sign in</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
 
-        <br><br>
+        </form>
 
-        <button type="submit">
-            Login
-        </button>
+        <p id="message"></p>
 
-    </form>
+        <p class="footer-text">
+            Don't have an account? <a href="register.html">Register</a>
+        </p>
+    </div>
+</div>
 
-    <p id="message"></p>
+<script>
+    const togglePass = document.getElementById("togglePass");
+    const passwordInput = document.getElementById("password");
 
-    <script src="./js/login.js"></script>
+    togglePass.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        togglePass.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+
+    const form = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const btnText = document.getElementById("btnText");
+    const spinner = document.getElementById("spinner");
+    const messageEl = document.getElementById("message");
+
+    function showMessage(text, type) {
+        messageEl.textContent = text;
+        messageEl.className = type;
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        loginBtn.disabled = true;
+        btnText.style.display = "none";
+        spinner.style.display = "block";
+        messageEl.className = "";
+
+        const loginData = {
+            mobile: document.getElementById("mobile").value,
+            password: document.getElementById("password").value
+        };
+
+        try {
+            const res = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(loginData)
+            });
+
+            const data = await res.json();
+
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                showMessage("Login successful! Redirecting…", "success");
+                setTimeout(() => { window.location.href = "profile.html"; }, 800);
+            } else {
+                showMessage(data.message || "Login failed. Please try again.", "error");
+                loginBtn.disabled = false;
+                btnText.style.display = "block";
+                spinner.style.display = "none";
+            }
+
+        } catch (err) {
+            showMessage("Could not connect to server. Please try again.", "error");
+            loginBtn.disabled = false;
+            btnText.style.display = "block";
+            spinner.style.display = "none";
+        }
+    });
+</script>
 
 </body>
 </html>
