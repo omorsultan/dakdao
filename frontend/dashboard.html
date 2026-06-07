@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+
+    <h2>Dashboard</h2>
+
+    <p id="userInfo"></p>
+
+    <button id="logoutBtn">
+        Logout
+    </button>
+
+    <script>
+
+        const user =
+            JSON.parse(
+                localStorage.getItem("user")
+            );
+
+        if (!user) {
+
+            window.location.href =
+                "login.html";
+        }
+
+        document.getElementById("userInfo")
+            .innerText =
+            `Welcome ${user.name} (${user.role})`;
+
+        document.getElementById("logoutBtn")
+            .addEventListener(
+                "click",
+                () => {
+
+                    localStorage.clear();
+
+                    window.location.href =
+                        "login.html";
+                }
+            );
+
+    </script>
+
+</body>
+</html>
