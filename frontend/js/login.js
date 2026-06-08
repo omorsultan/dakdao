@@ -1,4 +1,4 @@
-#Fronteend/js/login.js
+// Fronteend/js/login.js
 
 const form = document.getElementById("loginForm");
 
@@ -23,13 +23,16 @@ form.addEventListener("submit", async (e) => {
 
         const data = await res.json();
 
+// part of login.js
         if (data.token) {
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
             // 👉 redirect to profile page
-            window.location.href = "profile.html";
+            // window.location.href = "profile.html";
+
+            window.location.href = "customer-home.html";
 
         } else {
             document.getElementById("message").innerText = data.message;
