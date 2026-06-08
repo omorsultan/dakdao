@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Task — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f5f0;
+            --bg2: #efede7;
+            --card: #ffffff;
+            --border: #e0ddd5;
+            --border2: #ccc9bf;
+            --text: #1c1a16;
+            --muted: #7a7567;
+            --subtle: #b0ab9f;
+            --accent: #d4522a;
+            --accent-dim: rgba(212,82,42,0.1);
+            --accent-hover: #b84422;
+            --green: #2a7a52;
+            --green-dim: rgba(42,122,82,0.1);
+            --step-active: #d4522a;
+            --step-done: #2a7a52;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Top nav ── */
+        .topnav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .back-btn svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round;
+        }
+
+        .back-btn:hover { color: var(--text); }
+
+        .nav-divider {
+            width: 1px; height: 18px;
+            background: var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-mark {
+            width: 28px; height: 28px;
+            background: var(--text);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-mark svg {
+            width: 13px; height: 13px;
+            stroke: #fff; fill: none;
+            stroke-width: 2.5; stroke-linecap: round;
+        }
+
+        .brand-name {
+            font-family: 'Fraunces', serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .nav-step-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* ── Progress bar ── */
+        .progress-bar-wrap {
+            height: 3px;
+            background: var(--bg2);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* ── Layout ── */
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 0;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            gap: 2.5rem;
+        }
+
+        /* ── Step indicator ── */
+        .steps-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .step-num {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+            border: 2px solid var(--border2);
+            color: var(--subtle);
+            background: var(--card);
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .step-num.active { border-color: var(--step-active); color: var(--step-active); }
+        .step-num.done   { border-color: var(--step-done); background: var(--step-done); color: #fff; }
+
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--subtle);
+            transition: color 0.3s;
+        }
+
+        .step-label.active { color: var(--step-active); }
+        .step-label.done   { color: var(--step-done); }
+
+        .step-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            margin: 0 10px;
+        }
+
+        .step-line.done { background: var(--step-done); }
+
+        /* ── Form card ── */
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .form-section {
+            display: none;
+            padding: 2rem;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .form-section.active { display: block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-section-sub {
+            font-size: 0.84rem;
+            color: var(--muted);
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Category grid ── */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .cat-btn {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 0.75rem;
+            background: var(--bg);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .cat-btn:hover { border-color: var(--border2); background: var(--bg2); }
+
+        .cat-btn.selected {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .cat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .cat-name {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        /* ── Field ── */
+        .field { margin-bottom: 1.1rem; }
+
+        .field-label {
+            display: block;
+            font-size: 0.73rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.45rem;
+        }
+
+        .field-hint {
+            font-size: 0.72rem;
+            color: var(--subtle);
+            margin-top: 0.3rem;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap svg.fi {
+            position: absolute;
+            left: 13px; top: 50%;
+            transform: translateY(-50%);
+            width: 14px; height: 14px;
+            stroke: var(--subtle); fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+            pointer-events: none;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.65rem 0.95rem 0.65rem 2.3rem;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            appearance: none;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        input::placeholder, textarea::placeholder { color: var(--subtle); }
+
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+            padding-top: 0.7rem;
+            line-height: 1.55;
+        }
+
+        /* Price input special */
+        .price-wrap { position: relative; }
+
+        .price-prefix {
+            position: absolute;
+            left: 13px; top: 50%;
+            transform: translateY(-50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        .price-input {
+            padding-left: 2.5rem !important;
+        }
+
+        /* ── Location ── */
+        .loc-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid rgba(212,82,42,0.2);
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: all 0.15s;
+        }
+
+        .loc-btn svg {
+            width: 13px; height: 13px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round;
+        }
+
+        .loc-btn:hover { background: rgba(212,82,42,0.16); }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* ── Bottom nav ── */
+        .form-footer {
+            border-top: 1px solid var(--border);
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-prev {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--muted);
+            background: none;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-prev svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round;
+        }
+
+        .btn-prev:hover { border-color: var(--border2); color: var(--text); }
+
+        .btn-next {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 9px;
+            padding: 0.65rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .btn-next svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2.5; stroke-linecap: round;
+        }
+
+        .btn-next:hover { background: var(--accent-hover); }
+        .btn-next:active { transform: scale(0.98); }
+        .btn-next:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .spinner {
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Right sidebar: summary ── */
+        .summary-col { position: sticky; top: 90px; }
+
+        .summary-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .summary-head {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .summary-body { padding: 1.1rem 1.25rem; }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            font-size: 0.82rem;
+            gap: 1rem;
+        }
+
+        .summary-row:last-child { margin-bottom: 0; }
+
+        .summary-key { color: var(--muted); flex-shrink: 0; }
+
+        .summary-val {
+            font-weight: 500;
+            text-align: right;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .summary-val.empty { color: var(--subtle); font-style: italic; }
+
+        .price-preview {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+        }
+
+        .price-preview-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.3rem;
+        }
+
+        .price-preview-val {
+            font-family: 'Fraunces', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .price-preview-sub {
+            font-size: 0.72rem;
+            color: var(--subtle);
+            margin-top: 0.2rem;
+        }
+
+        /* ── Tips card ── */
+        .tips-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.1rem 1.25rem;
+        }
+
+        .tips-card h4 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.7rem;
+            color: var(--text);
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            margin-bottom: 0.55rem;
+            font-size: 0.76rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .tip-item:last-child { margin-bottom: 0; }
+
+        .tip-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* ── Success screen ── */
+        .success-screen {
+            display: none;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .success-screen.active { display: block; }
+
+        .success-icon {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: var(--green-dim);
+            border: 2px solid var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+        }
+
+        .success-icon svg {
+            width: 28px; height: 28px;
+            stroke: var(--green); fill: none;
+            stroke-width: 2.5; stroke-linecap: round;
+        }
+
+        .success-screen h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-screen p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.55;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-ghost {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.65rem 1.2rem;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            background: none;
+            color: var(--text);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .btn-ghost:hover { border-color: var(--border2); }
+
+        .btn-solid {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.65rem 1.3rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .btn-solid:hover { background: var(--accent-hover); }
+
+        /* ── Error msg ── */
+        #errorMsg {
+            margin: 0 2rem 1rem;
+            padding: 0.65rem 0.9rem;
+            background: #fff1f1;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            color: #c0392b;
+            display: none;
+        }
+
+        #errorMsg.show { display: block; }
+
+        @media (max-width: 820px) {
+            .page { grid-template-columns: 1fr; }
+            .summary-col { display: none; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top nav -->
+<nav class="topnav">
+    <div class="nav-left">
+        <a class="back-btn" href="customer-home.html">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+        </a>
+        <div class="nav-divider"></div>
+        <div class="brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="brand-name">Dakdao</span>
+        </div>
+    </div>
+    <span class="nav-step-label" id="navStepLabel">Step 1 of 3</span>
+</nav>
+
+<!-- Progress bar -->
+<div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar" style="width:33%"></div>
+</div>
+
+<div class="page">
+    <!-- ── Left: Form ── -->
+    <div class="form-col">
+
+        <!-- Step indicators -->
+        <div class="steps-row">
+            <div class="step">
+                <div class="step-num active" id="snum1">1</div>
+                <span class="step-label active" id="slbl1">Category</span>
+            </div>
+            <div class="step-line" id="sline1"></div>
+            <div class="step">
+                <div class="step-num" id="snum2">2</div>
+                <span class="step-label" id="slbl2">Details</span>
+            </div>
+            <div class="step-line" id="sline2"></div>
+            <div class="step">
+                <div class="step-num" id="snum3">3</div>
+                <span class="step-label" id="slbl3">Location & Price</span>
+            </div>
+        </div>
+
+        <div class="form-card">
+
+            <!-- STEP 1: Category -->
+            <div class="form-section active" id="step1">
+                <div class="form-section-title">What do you need done?</div>
+                <div class="form-section-sub">Pick the category that best fits your task</div>
+
+                <div class="category-grid" id="categoryGrid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Or describe briefly</label>
+                    <div class="input-wrap">
+                        <svg class="fi" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <input type="text" id="taskTitle" placeholder="e.g. Fix my kitchen sink">
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Description -->
+            <div class="form-section" id="step2">
+                <div class="form-section-title">Describe your task</div>
+                <div class="form-section-sub">The more detail you give, the better offers you'll receive</div>
+
+                <div class="field">
+                    <label class="field-label">Full description</label>
+                    <div class="input-wrap">
+                        <svg class="fi" style="top:18px;transform:none" viewBox="0 0 24 24"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                        <textarea id="description" placeholder="Describe what needs to be done, any special requirements, tools needed, preferred timing…"></textarea>
+                    </div>
+                    <p class="field-hint"><span id="charCount">0</span> / 1000 characters</p>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Preferred date (optional)</label>
+                    <div class="input-wrap">
+                        <svg class="fi" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <input type="text" id="preferredDate" placeholder="e.g. This weekend, After 5pm, Flexible">
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Location & Price -->
+            <div class="form-section" id="step3">
+                <div class="form-section-title">Where & how much?</div>
+                <div class="form-section-sub">Set the task location and your initial budget</div>
+
+                <div class="field">
+                    <label class="field-label">Location</label>
+                    <div class="input-wrap">
+                        <svg class="fi" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <input type="text" id="location_text" placeholder="e.g. Mirpur 10, Dhaka">
+                    </div>
+                    <button class="loc-btn" onclick="getLocation()" type="button">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                        Use current location
+                    </button>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">Latitude</label>
+                        <div class="input-wrap">
+                            <svg class="fi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                            <input type="number" id="latitude" placeholder="23.8103" step="any">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Longitude</label>
+                        <div class="input-wrap">
+                            <svg class="fi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                            <input type="number" id="longitude" placeholder="90.4125" step="any">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Initial budget (৳)</label>
+                    <div class="price-wrap input-wrap">
+                        <span class="price-prefix">৳</span>
+                        <input type="number" id="initial_price" class="price-input" placeholder="500" min="0" step="50">
+                    </div>
+                    <p class="field-hint">Leave blank to let workers make offers freely</p>
+                </div>
+            </div>
+
+            <!-- SUCCESS -->
+            <div class="success-screen" id="successScreen">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h2>Task posted!</h2>
+                <p>Your task has been published. Workers near you will start sending offers shortly.</p>
+                <div class="success-actions">
+                    <a class="btn-ghost" href="customer-home.html">Back to dashboard</a>
+                    <button class="btn-solid" onclick="resetForm()">Post another</button>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div id="errorMsg"></div>
+
+            <!-- Footer nav -->
+            <div class="form-footer" id="formFooter">
+                <button class="btn-prev" id="prevBtn" onclick="prevStep()" style="visibility:hidden">
+                    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                    Back
+                </button>
+                <button class="btn-next" id="nextBtn" onclick="nextStep()">
+                    Continue
+                    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Right: Summary ── -->
+    <div class="summary-col">
+        <div class="summary-card">
+            <div class="summary-head">Task summary</div>
+            <div class="summary-body">
+                <div class="summary-row">
+                    <span class="summary-key">Category</span>
+                    <span class="summary-val empty" id="sumCategory">Not selected</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-key">Title</span>
+                    <span class="summary-val empty" id="sumTitle">–</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-key">Description</span>
+                    <span class="summary-val empty" id="sumDesc">–</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-key">Location</span>
+                    <span class="summary-val empty" id="sumLocation">–</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-key">Date</span>
+                    <span class="summary-val empty" id="sumDate">Flexible</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="price-preview" id="pricePreview">
+            <div class="price-preview-label">Your budget</div>
+            <div class="price-preview-val" id="priceDisplay">Open to offers</div>
+            <div class="price-preview-sub">Workers can negotiate the final price</div>
+        </div>
+
+        <div class="tips-card" style="margin-top:14px">
+            <h4>Tips for a great post</h4>
+            <div class="tip-item"><span class="tip-dot"></span>Be specific about what you need done</div>
+            <div class="tip-item"><span class="tip-dot"></span>Mention any tools or materials required</div>
+            <div class="tip-item"><span class="tip-dot"></span>A fair budget attracts more offers faster</div>
+            <div class="tip-item"><span class="tip-dot"></span>Include your preferred time window</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:5000";
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "login.html"; }
+
+    // ── Categories ─────────────────────────────────────────────────
+    const CATEGORIES = [
+        { id: null, icon: "🔧", name: "Plumbing" },
+        { id: null, icon: "⚡", name: "Electrical" },
+        { id: null, icon: "🪚", name: "Carpentry" },
+        { id: null, icon: "🧹", name: "Cleaning" },
+        { id: null, icon: "🎨", name: "Painting" },
+        { id: null, icon: "🚗", name: "Transport" },
+        { id: null, icon: "📦", name: "Moving" },
+        { id: null, icon: "🌿", name: "Gardening" },
+        { id: null, icon: "🛠️", name: "General" },
+    ];
+
+    let selectedCategoryId   = null;
+    let selectedCategoryName = null;
+    let currentStep          = 1;
+    const TOTAL_STEPS        = 3;
+
+    // ── Load categories from backend, fallback to defaults ─────────
+    async function loadCategories() {
+        try {
+            const res = await fetch(`${API}/api/categories`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const cats = data.categories || data || [];
+                if (cats.length > 0) {
+                    renderCategories(cats.map((c, i) => ({
+                        id: c.id,
+                        name: c.name,
+                        icon: CATEGORIES[i]?.icon || "🛠️"
+                    })));
+                    return;
+                }
+            }
+        } catch (e) { /* use defaults */ }
+        renderCategories(CATEGORIES);
+    }
+
+    function renderCategories(cats) {
+        const grid = document.getElementById("categoryGrid");
+        grid.innerHTML = cats.map(c => `
+            <button class="cat-btn" onclick="selectCategory(${c.id}, '${c.name}', this)" type="button">
+                <span class="cat-icon">${c.icon}</span>
+                <span class="cat-name">${c.name}</span>
+            </button>
+        `).join("");
+    }
+
+    function selectCategory(id, name, el) {
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("selected"));
+        el.classList.add("selected");
+        selectedCategoryId   = id;
+        selectedCategoryName = name;
+        updateSummary();
+    }
+
+    // ── Step nav ───────────────────────────────────────────────────
+    function goToStep(n) {
+        document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
+        document.getElementById(`step${n}`).classList.add("active");
+        currentStep = n;
+
+        // Progress bar
+        document.getElementById("progressBar").style.width = `${(n / TOTAL_STEPS) * 100}%`;
+        document.getElementById("navStepLabel").textContent = `Step ${n} of ${TOTAL_STEPS}`;
+
+        // Step indicators
+        for (let i = 1; i <= TOTAL_STEPS; i++) {
+            const num = document.getElementById(`snum${i}`);
+            const lbl = document.getElementById(`slbl${i}`);
+            num.classList.remove("active","done");
+            lbl.classList.remove("active","done");
+            if (i < n)       { num.innerHTML = "✓"; num.classList.add("done"); lbl.classList.add("done"); }
+            else if (i === n){ num.innerHTML = i;   num.classList.add("active"); lbl.classList.add("active"); }
+            else             { num.innerHTML = i; }
+        }
+
+        // Lines
+        for (let i = 1; i <= TOTAL_STEPS - 1; i++) {
+            const line = document.getElementById(`sline${i}`);
+            if (line) line.classList.toggle("done", i < n);
+        }
+
+        // Buttons
+        document.getElementById("prevBtn").style.visibility = n === 1 ? "hidden" : "visible";
+        const nextBtn = document.getElementById("nextBtn");
+        if (n === TOTAL_STEPS) {
+            nextBtn.innerHTML = `Post task <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        } else {
+            nextBtn.innerHTML = `Continue <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        }
+
+        hideError();
+    }
+
+    function prevStep() {
+        if (currentStep > 1) goToStep(currentStep - 1);
+    }
+
+    function nextStep() {
+        if (!validateStep(currentStep)) return;
+        if (currentStep < TOTAL_STEPS) {
+            goToStep(currentStep + 1);
+        } else {
+            submitTask();
+        }
+    }
+
+    // ── Validation ─────────────────────────────────────────────────
+    function validateStep(step) {
+        if (step === 1) {
+            if (!selectedCategoryId && !document.getElementById("taskTitle").value.trim()) {
+                showError("Please select a category or enter a task title.");
+                return false;
+            }
+        }
+        if (step === 2) {
+            const desc = document.getElementById("description").value.trim();
+            if (desc.length < 10) {
+                showError("Please describe your task in at least 10 characters.");
+                return false;
+            }
+        }
+        if (step === 3) {
+            const loc = document.getElementById("location_text").value.trim();
+            if (!loc) {
+                showError("Please enter a location for your task.");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ── Live summary updates ───────────────────────────────────────
+    function updateSummary() {
+        const title = document.getElementById("taskTitle").value.trim();
+        const desc  = document.getElementById("description").value.trim();
+        const loc   = document.getElementById("location_text").value.trim();
+        const date  = document.getElementById("preferredDate").value.trim();
+        const price = document.getElementById("initial_price").value;
+
+        setText("sumCategory", selectedCategoryName || null);
+        setText("sumTitle",    title || null);
+        setText("sumDesc",     desc ? (desc.slice(0,80) + (desc.length > 80 ? "…" : "")) : null);
+        setText("sumLocation", loc || null);
+        setText("sumDate",     date || "Flexible");
+
+        const priceDisplay = document.getElementById("priceDisplay");
+        priceDisplay.textContent = price ? `৳ ${Number(price).toLocaleString("en-IN")}` : "Open to offers";
+    }
+
+    function setText(id, val) {
+        const el = document.getElementById(id);
+        if (val) { el.textContent = val; el.classList.remove("empty"); }
+        else      { el.textContent = "–"; el.classList.add("empty"); }
+    }
+
+    // Live listeners
+    ["taskTitle","description","location_text","preferredDate","initial_price"].forEach(id => {
+        document.getElementById(id)?.addEventListener("input", updateSummary);
+    });
+
+    document.getElementById("description").addEventListener("input", function() {
+        document.getElementById("charCount").textContent = this.value.length;
+    });
+
+    // ── Location ───────────────────────────────────────────────────
+    function getLocation() {
+        if (!navigator.geolocation) { showError("Geolocation not supported."); return; }
+        navigator.geolocation.getCurrentPosition(pos => {
+            document.getElementById("latitude").value  = pos.coords.latitude.toFixed(6);
+            document.getElementById("longitude").value = pos.coords.longitude.toFixed(6);
+            updateSummary();
+        }, () => showError("Could not get your location. Enter manually."));
+    }
+
+    // ── Submit ─────────────────────────────────────────────────────
+    async function submitTask() {
+        const btn = document.getElementById("nextBtn");
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Posting…`;
+        hideError();
+
+        const payload = {
+            category_id:   selectedCategoryId,
+            description:   document.getElementById("description").value.trim(),
+            location_text: document.getElementById("location_text").value.trim(),
+            latitude:      document.getElementById("latitude").value   || null,
+            longitude:     document.getElementById("longitude").value  || null,
+            initial_price: document.getElementById("initial_price").value || null,
+        };
+
+        try {
+            const res = await fetch(`${API}/api/tasks`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (data.success || data.taskId) {
+                // Hide form, show success
+                document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
+                document.getElementById("formFooter").style.display = "none";
+                document.getElementById("successScreen").classList.add("active");
+                document.getElementById("progressBar").style.width = "100%";
+            } else {
+                showError(data.message || "Something went wrong. Please try again.");
+                btn.disabled = false;
+                btn.innerHTML = `Post task <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+            }
+
+        } catch (err) {
+            showError("Could not connect to server. Please try again.");
+            btn.disabled = false;
+            btn.innerHTML = `Post task <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+    }
+
+    // ── Reset ──────────────────────────────────────────────────────
+    function resetForm() {
+        selectedCategoryId   = null;
+        selectedCategoryName = null;
+        ["taskTitle","description","preferredDate","location_text","latitude","longitude","initial_price"]
+            .forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+        document.getElementById("charCount").textContent = "0";
+        document.getElementById("successScreen").classList.remove("active");
+        document.getElementById("formFooter").style.display = "flex";
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("selected"));
+        updateSummary();
+        goToStep(1);
+    }
+
+    // ── Error helpers ──────────────────────────────────────────────
+    function showError(msg) {
+        const el = document.getElementById("errorMsg");
+        el.textContent = msg;
+        el.classList.add("show");
+    }
+
+    function hideError() {
+        document.getElementById("errorMsg").classList.remove("show");
+    }
+
+    // ── Boot ───────────────────────────────────────────────────────
+    loadCategories();
+    goToStep(1);
+</script>
+
+</body>
+</html>
