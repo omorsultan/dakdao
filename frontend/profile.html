@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -440,11 +438,11 @@
         <!-- Role Toggle -->
         <p class="section-label">I am a</p>
         <div class="role-toggle">
-            <button class="role-btn active" data-role="worker" >
+            <button class="role-btn active" data-role="worker" onclick="setRole('worker')">
                 <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/></svg>
                 Worker
             </button>
-            <button class="role-btn" data-role="customer" >
+            <button class="role-btn" data-role="customer" onclick="setRole('customer')">
                 <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 Customer
             </button>
@@ -538,10 +536,15 @@
 
 <script>
     // ── Role toggle ─────────────────────────────────────────────
-    let currentRole = user.role || "worker";
+    let currentRole = "worker";
 
     function setRole(role) {
-       // role is fixed, no switching allowed
+        currentRole = role;
+        document.querySelectorAll(".role-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.role === role);
+        });
+        const workerSection = document.getElementById("workerSection");
+        workerSection.classList.toggle("hidden", role !== "worker");
     }
 
     // ── Auth guard ──────────────────────────────────────────────
@@ -562,7 +565,6 @@
 
         // Pre-select role if stored
         if (user.role === "customer") setRole("customer");
-        else if (user.role === "worker") setRole("worker");
     }
 
     // ── Avatar preview ───────────────────────────────────────────

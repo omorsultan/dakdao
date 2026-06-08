@@ -1,4 +1,4 @@
-// controllers/profile.controller.js
+// backend/controllers/profile.controller.js
 const pool = require("../config/db");
 
 
