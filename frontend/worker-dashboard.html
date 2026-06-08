@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0e0f0c;
+            --surface: #161713;
+            --card: #1c1e19;
+            --card-hover: #222420;
+            --border: #2a2c27;
+            --border-light: #333530;
+            --text: #e8e6df;
+            --muted: #7a7870;
+            --subtle: #454540;
+            --accent: #c8f060;
+            --accent-dim: rgba(200,240,96,0.12);
+            --accent-hover: #d4f57a;
+            --red: #f06060;
+            --red-dim: rgba(240,96,96,0.12);
+            --blue: #60b4f0;
+            --blue-dim: rgba(96,180,240,0.12);
+            --amber: #f0c060;
+            --amber-dim: rgba(240,192,96,0.12);
+            --purple: #b060f0;
+            --purple-dim: rgba(176,96,240,0.12);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-mark {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-mark svg {
+            width: 15px; height: 15px;
+            stroke: #0e0f0c; fill: none;
+            stroke-width: 2.5; stroke-linecap: round;
+        }
+
+        .logo-name {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .nav-section {
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--subtle);
+            padding: 0 0.5rem;
+            margin-bottom: 0.4rem;
+            margin-top: 1.2rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0.55rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .nav-item svg {
+            width: 15px; height: 15px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+            flex-shrink: 0;
+        }
+
+        .nav-item:hover { background: var(--card); color: var(--text); }
+
+        .nav-item.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            font-size: 0.65rem;
+            font-family: 'DM Mono', monospace;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .worker-chip {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0.6rem 0.75rem;
+            border-radius: 9px;
+            background: var(--card);
+            margin-bottom: 0.5rem;
+        }
+
+        .worker-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            border: 1.5px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .worker-info { overflow: hidden; }
+
+        .worker-info .wname {
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .worker-info .wrole {
+            font-size: 0.68rem;
+            color: var(--muted);
+        }
+
+        /* ── Main content ── */
+        .main {
+            padding: 2rem 2rem 4rem;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+        }
+
+        .page-title p {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-top: 0.2rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .availability-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--muted);
+        }
+
+        .availability-toggle.online {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .dot.online { background: var(--accent); animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.1rem 1.2rem;
+            transition: border-color 0.15s;
+        }
+
+        .stat-card:hover { border-color: var(--border-light); }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon svg {
+            width: 15px; height: 15px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+        }
+
+        .stat-icon.green  { background: var(--accent-dim); color: var(--accent); }
+        .stat-icon.red    { background: var(--red-dim);    color: var(--red);    }
+        .stat-icon.blue   { background: var(--blue-dim);   color: var(--blue);   }
+        .stat-icon.amber  { background: var(--amber-dim);  color: var(--amber);  }
+
+        .stat-trend {
+            font-size: 0.68rem;
+            font-family: 'DM Mono', monospace;
+            color: var(--muted);
+            background: var(--surface);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .stat-num {
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            font-family: 'DM Mono', monospace;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* ── Two-col layout ── */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 14px;
+        }
+
+        /* ── Section card ── */
+        .section-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .section-head {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-head h3 {
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .section-head-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pill {
+            font-size: 0.68rem;
+            font-weight: 500;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .pill.green  { background: var(--accent-dim); color: var(--accent); }
+        .pill.blue   { background: var(--blue-dim);   color: var(--blue);   }
+        .pill.amber  { background: var(--amber-dim);  color: var(--amber);  }
+        .pill.red    { background: var(--red-dim);    color: var(--red);    }
+        .pill.purple { background: var(--purple-dim); color: var(--purple); }
+        .pill.muted  { background: var(--surface);    color: var(--muted);  }
+
+        .text-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: none;
+        }
+
+        .text-btn:hover { color: var(--text); }
+
+        /* ── Available tasks ── */
+        .task-item {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+            cursor: pointer;
+        }
+
+        .task-item:last-child { border-bottom: none; }
+        .task-item:hover { background: var(--card-hover); }
+
+        .task-item-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-item-top h4 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.73rem;
+            color: var(--muted);
+        }
+
+        .task-meta-item svg {
+            width: 12px; height: 12px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+        }
+
+        .task-price {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        .offer-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.35rem 0.8rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid rgba(200,240,96,0.25);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-top: 0.6rem;
+            display: inline-block;
+        }
+
+        .offer-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        /* ── My active tasks ── */
+        .active-task-item {
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .active-task-item:last-child { border-bottom: none; }
+
+        .active-task-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .active-task-info { flex: 1; overflow: hidden; }
+
+        .active-task-info h4 {
+            font-size: 0.82rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .active-task-info span {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        /* ── Right col ── */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ── Profile card ── */
+        .profile-mini {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .profile-mini-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .profile-mini-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .profile-mini-info h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .profile-mini-info span {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .verification-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .verification-row:first-of-type { border-top: none; }
+
+        .verif-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verif-label svg {
+            width: 12px; height: 12px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+        }
+
+        .verif-status {
+            font-size: 0.7rem;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .verif-status.ok     { color: var(--accent); }
+        .verif-status.pending{ color: var(--amber); }
+        .verif-status.none   { color: var(--muted); }
+
+        .edit-profile-btn {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.55rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .edit-profile-btn:hover { border-color: var(--border-light); color: var(--text); }
+
+        /* ── Earnings card ── */
+        .earnings-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .earnings-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.4rem;
+        }
+
+        .earnings-amount {
+            font-size: 2rem;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: -0.04em;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .earnings-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .earnings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        .earnings-row span:first-child { color: var(--muted); }
+
+        .earnings-row span:last-child {
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* ── Skills card ── */
+        .skills-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .skills-card h3 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 0.85rem;
+        }
+
+        .skills-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .skill-tag {
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 0.3rem 0.65rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 36px; height: 36px;
+            stroke: var(--subtle); fill: none;
+            stroke-width: 1.5; stroke-linecap: round;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state p {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        /* ── Loading skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="logo-name">Dakdao</span>
+        </div>
+
+        <div class="nav-section">Main</div>
+        <a class="nav-item active" href="#">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+        </a>
+        <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Available Tasks
+            <span class="badge" id="sidebarTaskCount">–</span>
+        </a>
+        <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            My Tasks
+        </a>
+
+        <div class="nav-section">Account</div>
+        <a class="nav-item" href="profile.html">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+        </a>
+        <button class="nav-item" onclick="logout()">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+        </button>
+
+        <div class="sidebar-footer">
+            <div class="worker-chip">
+                <div class="worker-avatar" id="sidebarAvatar">–</div>
+                <div class="worker-info">
+                    <div class="wname" id="sidebarName">Loading…</div>
+                    <div class="wrole">Worker</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="page-title">
+                <h1 id="mainGreeting">Good morning</h1>
+                <p id="mainSub">Here's what's happening today</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="availability-toggle" id="availBtn" onclick="toggleAvailability()">
+                    <span class="dot" id="availDot"></span>
+                    <span id="availText">Offline</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon green">
+                        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <span class="stat-trend" id="trendCompleted">–</span>
+                </div>
+                <div class="stat-num" id="statCompleted">–</div>
+                <div class="stat-label">Tasks completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon amber">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <span class="stat-trend" id="trendActive">–</span>
+                </div>
+                <div class="stat-num" id="statActive">–</div>
+                <div class="stat-label">Active tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon blue">
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <span class="stat-trend" id="trendEarnings">–</span>
+                </div>
+                <div class="stat-num" id="statEarnings">–</div>
+                <div class="stat-label">Total earned (৳)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon red">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <span class="stat-trend" id="trendOffers">–</span>
+                </div>
+                <div class="stat-num" id="statOffers">–</div>
+                <div class="stat-label">Pending offers</div>
+            </div>
+        </div>
+
+        <!-- Content grid -->
+        <div class="content-grid">
+
+            <!-- Left: available tasks -->
+            <div>
+                <div class="section-card" style="margin-bottom:14px">
+                    <div class="section-head">
+                        <h3>Available tasks near you</h3>
+                        <div class="section-head-right">
+                            <span class="pill green" id="availableCount">0 open</span>
+                            <a class="text-btn" href="#">View all →</a>
+                        </div>
+                    </div>
+                    <div id="availableTasksList">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <p>Loading available tasks…</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My active tasks -->
+                <div class="section-card">
+                    <div class="section-head">
+                        <h3>My active tasks</h3>
+                        <a class="text-btn" href="#">See all →</a>
+                    </div>
+                    <div id="myTasksList">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            <p>No active tasks yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right col -->
+            <div class="right-col">
+
+                <!-- Profile mini -->
+                <div class="profile-mini">
+                    <div class="profile-mini-top">
+                        <div class="profile-mini-avatar" id="profileAvatar">–</div>
+                        <div class="profile-mini-info">
+                            <h3 id="profileName">Loading…</h3>
+                            <span id="profileMobile">–</span>
+                        </div>
+                    </div>
+                    <div class="verification-row">
+                        <span class="verif-label">
+                            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            Profile complete
+                        </span>
+                        <span class="verif-status" id="verifProfile">–</span>
+                    </div>
+                    <div class="verification-row">
+                        <span class="verif-label">
+                            <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            NID verified
+                        </span>
+                        <span class="verif-status" id="verifNID">–</span>
+                    </div>
+                    <div class="verification-row">
+                        <span class="verif-label">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Admin verified
+                        </span>
+                        <span class="verif-status" id="verifAdmin">–</span>
+                    </div>
+                    <a class="edit-profile-btn" href="profile.html">Edit profile →</a>
+                </div>
+
+                <!-- Earnings -->
+                <div class="earnings-card">
+                    <div class="earnings-label">This month's earnings</div>
+                    <div class="earnings-amount" id="monthEarnings">৳ 0</div>
+                    <div class="earnings-breakdown">
+                        <div class="earnings-row">
+                            <span>Completed tasks</span>
+                            <span id="earnCompleted">0</span>
+                        </div>
+                        <div class="earnings-row">
+                            <span>Avg. per task</span>
+                            <span id="earnAvg">৳ 0</span>
+                        </div>
+                        <div class="earnings-row">
+                            <span>Pending payout</span>
+                            <span id="earnPending" style="color:var(--amber)">৳ 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="skills-card">
+                    <h3>My skills</h3>
+                    <div class="skills-wrap" id="skillsWrap">
+                        <span class="skill-tag skeleton" style="width:60px;height:26px;"></span>
+                        <span class="skill-tag skeleton" style="width:80px;height:26px;"></span>
+                        <span class="skill-tag skeleton" style="width:50px;height:26px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const API = "http://localhost:5000";
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "null");
+
+    // ── Auth guard ────────────────────────────────────────────────
+    if (!token || !user) { window.location.href = "login.html"; }
+
+    // ── Greeting ──────────────────────────────────────────────────
+    const hour = new Date().getHours();
+    const timeGreet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const firstName = user?.name?.split(" ")[0] || "Worker";
+
+    document.getElementById("mainGreeting").textContent = `${timeGreet}, ${firstName} 👷`;
+    document.getElementById("mainSub").textContent = `Here's your overview for today`;
+    document.getElementById("sidebarName").textContent = user?.name || "–";
+
+    const initials = user?.name
+        ? user.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+        : "W";
+    document.getElementById("sidebarAvatar").textContent  = initials;
+    document.getElementById("profileAvatar").textContent  = initials;
+    document.getElementById("profileName").textContent    = user?.name || "–";
+    document.getElementById("profileMobile").textContent  = user?.mobile || "–";
+
+    // ── Availability toggle ───────────────────────────────────────
+    let isOnline = localStorage.getItem("workerOnline") === "true";
+    updateAvailUI();
+
+    function updateAvailUI() {
+        const btn  = document.getElementById("availBtn");
+        const dot  = document.getElementById("availDot");
+        const text = document.getElementById("availText");
+        if (isOnline) {
+            btn.classList.add("online");
+            dot.classList.add("online");
+            text.textContent = "Online";
+        } else {
+            btn.classList.remove("online");
+            dot.classList.remove("online");
+            text.textContent = "Offline";
+        }
+    }
+
+    function toggleAvailability() {
+        isOnline = !isOnline;
+        localStorage.setItem("workerOnline", isOnline);
+        updateAvailUI();
+        // TODO: POST to /api/worker/availability when endpoint exists
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function esc(s) {
+        return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function fmtDate(d) {
+        if (!d) return "";
+        return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short" });
+    }
+
+    function fmtPrice(p) {
+        if (!p) return "Open";
+        return "৳ " + Number(p).toLocaleString("en-IN");
+    }
+
+    const statusColor = {
+        open: "green", negotiating: "blue", confirmed: "purple",
+        completed: "muted", cancelled: "red"
+    };
+
+    // ── Fetch worker profile ──────────────────────────────────────
+    async function loadProfile() {
+        try {
+            const res = await fetch(`${API}/api/profile/worker`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const p = data.profile || data;
+
+            if (p.full_name) {
+                document.getElementById("profileName").textContent   = p.full_name;
+                document.getElementById("sidebarName").textContent   = p.full_name.split(" ")[0];
+                const ini = p.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                document.getElementById("profileAvatar").textContent = ini;
+                document.getElementById("sidebarAvatar").textContent = ini;
+            }
+
+            // Verification
+            const hasProfile = !!(p.full_name && p.nid_number);
+            setVerif("verifProfile", hasProfile ? "ok" : "pending", hasProfile ? "✓ Done" : "Incomplete");
+            setVerif("verifNID",     p.nid_number ? "ok" : "none",  p.nid_number ? "✓ Done" : "Missing");
+            setVerif("verifAdmin",   p.is_verified ? "ok" : "pending", p.is_verified ? "✓ Verified" : "Pending");
+
+            // Skills
+            const skillsWrap = document.getElementById("skillsWrap");
+            if (p.skills) {
+                const tags = p.skills.split(",").map(s => s.trim()).filter(Boolean);
+                skillsWrap.innerHTML = tags.length
+                    ? tags.map(t => `<span class="skill-tag">${esc(t)}</span>`).join("")
+                    : `<span style="font-size:0.78rem;color:var(--muted)">No skills listed</span>`;
+            } else {
+                skillsWrap.innerHTML = `<span style="font-size:0.78rem;color:var(--muted)">No skills listed yet</span>`;
+            }
+
+        } catch (e) { /* silently fail */ }
+    }
+
+    function setVerif(id, type, label) {
+        const el = document.getElementById(id);
+        el.className = `verif-status ${type}`;
+        el.textContent = label;
+    }
+
+    // ── Fetch available tasks ─────────────────────────────────────
+    async function loadAvailableTasks() {
+        const container = document.getElementById("availableTasksList");
+        try {
+            const res = await fetch(`${API}/api/tasks?status=open`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            const tasks = data.tasks || data || [];
+
+            document.getElementById("availableCount").textContent = `${tasks.length} open`;
+            document.getElementById("sidebarTaskCount").textContent = tasks.length || "0";
+            document.getElementById("statOffers").textContent = "0";
+            document.getElementById("trendOffers").textContent = "–";
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <p>No open tasks available right now</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = tasks.slice(0, 6).map(task => `
+                <div class="task-item">
+                    <div class="task-item-top">
+                        <h4>${esc(task.description.slice(0,80))}${task.description.length > 80 ? "…" : ""}</h4>
+                        <span class="task-price">${fmtPrice(task.initial_price)}</span>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-meta-item">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            ${esc(task.location_text || "Location not set")}
+                        </span>
+                        <span class="task-meta-item">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            ${fmtDate(task.created_at)}
+                        </span>
+                        ${task.category_name ? `<span class="task-meta-item">${esc(task.category_name)}</span>` : ""}
+                    </div>
+                    <button class="offer-btn" onclick="makeOffer(${task.id})">Send offer</button>
+                </div>
+            `).join("");
+
+        } catch (e) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <p>Could not load tasks. Check your connection.</p>
+                </div>`;
+        }
+    }
+
+    // ── Fetch my tasks ────────────────────────────────────────────
+    async function loadMyTasks() {
+        const container = document.getElementById("myTasksList");
+        try {
+            const res = await fetch(`${API}/api/tasks/assigned`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            const tasks = data.tasks || data || [];
+
+            const active    = tasks.filter(t => ["negotiating","confirmed"].includes(t.status));
+            const completed = tasks.filter(t => t.status === "completed");
+
+            // Stats
+            document.getElementById("statCompleted").textContent  = completed.length;
+            document.getElementById("statActive").textContent     = active.length;
+            document.getElementById("trendCompleted").textContent = completed.length > 0 ? `+${completed.length}` : "0";
+            document.getElementById("trendActive").textContent    = active.length > 0 ? `${active.length} live` : "none";
+
+            // Earnings rough calc
+            const totalEarned = completed.reduce((s, t) => s + (parseFloat(t.initial_price) || 0), 0);
+            document.getElementById("statEarnings").textContent   = "৳ " + totalEarned.toLocaleString("en-IN");
+            document.getElementById("trendEarnings").textContent  = totalEarned > 0 ? "+" + totalEarned : "0";
+            document.getElementById("monthEarnings").textContent  = "৳ " + totalEarned.toLocaleString("en-IN");
+            document.getElementById("earnCompleted").textContent  = completed.length;
+            document.getElementById("earnAvg").textContent        = completed.length
+                ? "৳ " + Math.round(totalEarned / completed.length).toLocaleString("en-IN")
+                : "৳ 0";
+            document.getElementById("earnPending").textContent    = active.length
+                ? "৳ " + active.reduce((s,t) => s + (parseFloat(t.initial_price)||0), 0).toLocaleString("en-IN")
+                : "৳ 0";
+
+            if (active.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <p>No active tasks right now</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = active.slice(0, 5).map(task => `
+                <div class="active-task-item">
+                    <div class="active-task-dot" style="background:var(--${statusColor[task.status] || 'muted'})"></div>
+                    <div class="active-task-info">
+                        <h4>${esc(task.description.slice(0, 55))}${task.description.length > 55 ? "…" : ""}</h4>
+                        <span>${esc(task.location_text || "–")} · ${fmtDate(task.created_at)}</span>
+                    </div>
+                    <span class="pill ${statusColor[task.status] || 'muted'}">${task.status}</span>
+                </div>
+            `).join("");
+
+        } catch (e) {
+            // Set zeros on error
+            ["statCompleted","statActive","statEarnings","statOffers"].forEach(id => {
+                document.getElementById(id).textContent = "0";
+            });
+            ["trendCompleted","trendActive","trendEarnings","trendOffers"].forEach(id => {
+                document.getElementById(id).textContent = "–";
+            });
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <p>Could not load your tasks.</p>
+                </div>`;
+        }
+    }
+
+    // ── Make offer (stub) ─────────────────────────────────────────
+    function makeOffer(taskId) {
+        // TODO: open offer modal / navigate to task detail page
+        alert(`Send offer for task #${taskId} — wire this to your offer endpoint.`);
+    }
+
+    // ── Logout ────────────────────────────────────────────────────
+    function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("workerOnline");
+        localStorage.removeItem("profileComplete");
+        window.location.href = "login.html";
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────
+    loadProfile();
+    loadAvailableTasks();
+    loadMyTasks();
+</script>
+
+</body>
+</html>

@@ -352,7 +352,12 @@
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
                 showMessage("Login successful! Redirecting…", "success");
-                setTimeout(() => { window.location.href = "customer-home.html"; }, 800);
+                setTimeout(() => {if (data.user.role === "worker") {
+                window.location.href = "worker-dashboard.html";
+            } else {
+                window.location.href = "customer-home.html";
+            }
+                     }, 800);
             } else {
                 showMessage(data.message || "Login failed. Please try again.", "error");
                 loginBtn.disabled = false;
