@@ -1076,7 +1076,9 @@
                         </span>
                         ${task.category_name ? `<span class="task-meta-item">${esc(task.category_name)}</span>` : ""}
                     </div>
-                    <button class="offer-btn" onclick="makeOffer(${task.id})">Send offer</button>
+                    <button class="offer-btn" onclick="makeOffer(${task.id})">
+                        Send offer
+                        </button>
                 </div>
             `).join("");
 
@@ -1160,9 +1162,8 @@
 
     // ── Make offer (stub) ─────────────────────────────────────────
     function makeOffer(taskId) {
-        // TODO: open offer modal / navigate to task detail page
-        alert(`Send offer for task #${taskId} — wire this to your offer endpoint.`);
-    }
+    window.location.href = "worker-offer.html";
+}
 
     // ── Logout ────────────────────────────────────────────────────
     function logout() {

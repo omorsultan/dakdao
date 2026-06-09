@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tasks Dashboard - Client Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans min-h-screen text-gray-800">
+
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="font-bold text-xl tracking-tight text-gray-900">
+                    <i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>Customer Portal
+                </span>
+            </div>
+            <div>
+                <a href="create-task.html" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl shadow-sm transition">
+                    <i class="fa-solid fa-plus mr-2"></i> Post New Task
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">My Posted Tasks</h2>
+                <p class="mt-1 text-sm text-gray-500">Track, manage, and review negotiations for all your active projects.</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex space-x-3">
+                <span id="task-count-badge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                    0 Tasks Total
+                </span>
+            </div>
+        </div>
+
+        <div id="error-container" class="mb-6 hidden">
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center space-x-3">
+                <i class="fa-solid fa-circle-exclamation text-xl text-red-500"></i>
+                <span id="error-message">Error message context placeholder</span>
+            </div>
+        </div>
+
+        <div id="empty-state" class="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm hidden">
+            <div class="h-16 w-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-folder-open text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">No tasks posted yet</h3>
+            <p class="text-gray-500 text-sm max-w-sm mx-auto mb-6">Get started by posting your first assignment. Local professionals will send offers instantly.</p>
+            <a href="create-task.html" class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-black text-white font-medium text-sm rounded-xl transition shadow-sm">
+                Post a Task
+            </a>
+        </div>
+
+        <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Target Endpoint Config (Points to your getMyTasks controller route)
+            const API_URL = "http://localhost:5000/api/tasks/my"; 
+
+            async function loadCustomerTasks() {
+                try {
+                    const token = localStorage.getItem("token");
+                    
+                    // If no authorization token exists, send them back to login
+                    if (!token) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    const response = await fetch(API_URL, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}` // Passes through protected customer check gate
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        localStorage.clear();
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`Server returned code ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success && data.tasks) {
+                        renderTasksGrid(data.tasks);
+                    } else {
+                        showError("Failed to interpret data array format.");
+                    }
+
+                } catch (error) {
+                    console.error("API Error Fetching Tasks:", error);
+                    showError(`Could not safely connect to backend system: ${error.message}`);
+                }
+            }
+
+            // 2. Loop Through Array Data and Append HTML Layout Cards
+            function renderTasksGrid(tasks) {
+                const grid = document.getElementById("tasks-grid");
+                const countBadge = document.getElementById("task-count-badge");
+                const emptyState = document.getElementById("empty-state");
+
+                countBadge.innerText = `${tasks.length} Task${tasks.length === 1 ? '' : 's'} Total`;
+                grid.innerHTML = ""; // Clear out previous placeholder DOM items
+
+                if (tasks.length === 0) {
+                    emptyState.classList.remove("hidden");
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const card = document.createElement("div");
+                    card.className = "bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition duration-200";
+
+                    // Match dynamic color formatting variables to task status structures
+                    let statusClasses = "bg-gray-100 text-gray-700";
+                    if (task.status === "open") statusClasses = "bg-blue-50 text-blue-700 border border-blue-100";
+                    if (task.status === "negotiating") statusClasses = "bg-amber-50 text-amber-700 border border-amber-100 animate-pulse";
+                    if (task.status === "completed") statusClasses = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                    if (task.status === "cancelled") statusClasses = "bg-rose-50 text-rose-700 border border-rose-100";
+
+                    const dateFormatted = new Date(task.created_at).toLocaleDateString(undefined, {
+                        month: 'short', day: 'numeric', year: 'numeric'
+                    });
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">
+                                    <i class="fa-solid fa-tags mr-1"></i> ${task.category_name || "General"}
+                                </span>
+                                <span class="text-[11px] font-bold uppercase px-2.5 py-0.5 rounded-full ${statusClasses}">
+                                    ${task.status}
+                                </span>
+                            </div>
+
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="text-lg font-bold text-gray-900 truncate pr-2">Task #${task.id}</h3>
+                                <p class="text-lg font-black text-emerald-600 flex-shrink-0">$${parseFloat(task.initial_price || 0).toFixed(2)}</p>
+                            </div>
+
+                            <p class="text-sm text-gray-500 line-clamp-3 mb-4 font-sans leading-relaxed">
+                                ${task.description}
+                            </p>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
+                            <div>
+                                <i class="fa-solid fa-location-dot text-gray-400 mr-1"></i> 
+                                <span class="capitalize font-medium text-gray-600">${task.location_text}</span>
+                            </div>
+                            <a href="task-detail-view.html?id=${task.id}" class="...">
+    Manage Task <i class="fa-solid fa-chevron-right ml-1"></i>
+</a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            // Error Render Helper UI Function
+            function showError(message) {
+                const container = document.getElementById("error-container");
+                const text = document.getElementById("error-message");
+                container.classList.remove("hidden");
+                text.innerText = message;
+            }
+
+            // Execute processing lifecycle pipeline loop
+            loadCustomerTasks();
+        });
+    </script>
+</body>
+</html>

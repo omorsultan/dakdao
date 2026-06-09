@@ -119,3 +119,5 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+ALTER TABLE task_offers ADD COLUMN last_action_by INT NULL;

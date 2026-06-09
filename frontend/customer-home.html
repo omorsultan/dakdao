@@ -440,6 +440,7 @@
         <h1 id="greeting">Welcome back 👋</h1>
         <p id="subtext">What do you need help with today?</p>
     </div>
+    
 
     <!-- Profile incomplete banner -->
     <div class="banner" id="profileBanner">
@@ -465,7 +466,7 @@
             <h3>Post a task</h3>
             <p>Describe what you need done and get offers</p>
         </a>
-        <a class="action-card" href="my-tasks.html">
+        <a class="action-card" href="customer-my-task.html">
             <div class="action-icon blue">
                 <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
@@ -525,6 +526,7 @@
 
 <script>
     // ── Auth guard ───────────────────────────────────────────────
+     src="customer-home.js";
     const token = localStorage.getItem("token");
     const user  = JSON.parse(localStorage.getItem("user") || "null");
 
@@ -547,12 +549,47 @@
     }
 
     // ── Profile completion check ──────────────────────────────────
-    // Hide banner if profile was already saved (set a flag after profile.html saves)
-    const profileDone = localStorage.getItem("profileComplete");
-    if (profileDone) {
-        document.getElementById("profileBanner").classList.add("hidden");
-    }
+async function loadProfile() {
+    try {
+        const res = await fetch("http://localhost:5000/api/profile/customer", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
 
+        if (data.profile) {
+            document.getElementById("profileBanner").classList.add("hidden");
+
+            // Update nav avatar with photo or initials
+            const avatar = document.getElementById("navAvatar");
+            if (data.profile.profile_image) {
+                avatar.innerHTML = `<img src="http://localhost:5000/uploads/${data.profile.profile_image}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar">`;
+            }
+
+            // Inject profile info card above quick actions
+            const infoHTML = `
+                <div id="profileInfoCard" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:1rem;">
+                    <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--muted);">
+                        ${data.profile.profile_image
+                            ? `<img src="http://localhost:5000/uploads/${data.profile.profile_image}" style="width:100%;height:100%;object-fit:cover;" alt="photo">`
+                            : (data.profile.full_name ? data.profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase() : "?")}
+                    </div>
+                    <div>
+                        
+                        <div style="font-size:0.92rem;font-weight:600;">${escHtml(data.profile.full_name)}</div>
+                        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.15rem;">${escHtml(data.profile.mobile)}${data.profile.permanent_location ? " · " + escHtml(data.profile.permanent_location) : ""}</div>
+                    </div>
+                </div>`;
+
+            document.querySelector(".section-label").insertAdjacentHTML("beforebegin", infoHTML);
+        } else {
+            // No profile yet — show banner
+        }
+    } catch (err) {
+        // silently fail
+    }
+}
+
+loadProfile();
     // ── Load recent tasks ─────────────────────────────────────────
     async function loadTasks() {
         try {

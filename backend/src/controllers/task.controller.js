@@ -235,3 +235,41 @@ exports.getCategories = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// SEARCH / FILTER TASKS (Publicly accessible with user input)
+exports.searchTasks = async (req, res) => {
+    try {
+        // Grab inputs from the query parameters (?category=3&location=kawla)
+        const { category_id, location, min_price } = req.query;
+        
+        let sql = `
+            SELECT t.*, c.name AS category_name, u.name AS customer_name 
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u ON t.customer_id = u.id
+            WHERE t.status = 'open'
+        `;
+        const queryParams = [];
+
+        // Dynamically build the query based on what the user inputted
+        if (category_id) {
+            sql += " AND t.category_id = ?";
+            queryParams.push(category_id);
+        }
+        if (location) {
+            sql += " AND t.location_text LIKE ?";
+            queryParams.push(`%${location}%`); // Matches partial text search
+        }
+        if (min_price) {
+            sql += " AND t.initial_price >= ?";
+            queryParams.push(parseFloat(min_price));
+        }
+
+        sql += " ORDER BY t.created_at DESC";
+
+        const [tasks] = await pool.query(sql, queryParams);
+        res.json({ success: true, count: tasks.length, tasks });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

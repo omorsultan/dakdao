@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Offers — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0e0f0c; --surface: #161713; --card: #1c1e19; --card-hover: #222420;
+            --border: #2a2c27; --border-light: #333530;
+            --text: #e8e6df; --muted: #7a7870; --subtle: #454540;
+            --accent: #c8f060; --accent-dim: rgba(200,240,96,0.12);
+            --red: #f06060; --red-dim: rgba(240,96,96,0.12);
+            --blue: #60b4f0; --blue-dim: rgba(96,180,240,0.12);
+            --amber: #f0c060; --amber-dim: rgba(240,192,96,0.12);
+            --green: #60d090; --green-dim: rgba(96,208,144,0.12);
+        }
+
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ── Layout ── */
+        .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background: var(--surface); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 1.5rem 1rem;
+            position: sticky; top: 0; height: 100vh; overflow-y: auto;
+        }
+
+        .logo { display: flex; align-items: center; gap: 9px; padding: 0.25rem 0.5rem; margin-bottom: 2rem; }
+        .logo-mark { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-mark svg { width: 15px; height: 15px; stroke: #0e0f0c; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+        .logo-name { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
+
+        .nav-section { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtle); padding: 0 0.5rem; margin: 1.2rem 0 0.4rem; }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 0.55rem 0.75rem; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 500; color: var(--muted);
+            text-decoration: none; cursor: pointer; transition: all 0.15s;
+            border: none; background: none; width: 100%; font-family: 'DM Sans', sans-serif;
+        }
+        .nav-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
+        .nav-item:hover { background: var(--card); color: var(--text); }
+        .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+        .nav-item .badge { margin-left: auto; font-size: 0.65rem; font-family: 'DM Mono', monospace; background: var(--accent-dim); color: var(--accent); padding: 0.15rem 0.45rem; border-radius: 20px; }
+
+        .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .worker-chip { display: flex; align-items: center; gap: 9px; padding: 0.6rem 0.75rem; border-radius: 9px; background: var(--card); }
+        .worker-av-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim); border: 1.5px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+        .worker-info .wname { font-size: 0.8rem; font-weight: 600; }
+        .worker-info .wrole { font-size: 0.68rem; color: var(--muted); }
+
+        /* ── Main ── */
+        .main { padding: 2rem 2rem 4rem; }
+
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .page-title h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.03em; }
+        .page-title p { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+        /* ── Summary stats ── */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 1.75rem;
+        }
+
+        .sum-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+        }
+
+        .sum-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+
+        .sum-label { font-size: 0.72rem; color: var(--muted); }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 500;
+            padding: 0.4rem 0.85rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .filter-btn .fc {
+            font-family: 'DM Mono', monospace; font-size: 0.65rem;
+            background: var(--surface); padding: 0.1rem 0.35rem;
+            border-radius: 8px;
+        }
+
+        .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .filter-btn.active .fc { background: rgba(200,240,96,0.15); }
+
+        /* ── Offers list ── */
+        .offers-list { display: flex; flex-direction: column; gap: 10px; }
+
+        /* ── Offer row card ── */
+        .offer-row-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .offer-row-card:hover { border-color: var(--border-light); }
+        .offer-row-card.accepted { border-color: rgba(96,208,144,0.35); }
+        .offer-row-card.rejected { opacity: 0.55; }
+
+        .offer-row-top {
+            padding: 1rem 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .offer-task-desc {
+            font-size: 0.88rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 0.45rem;
+        }
+
+        .offer-task-meta {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 0.72rem; color: var(--muted);
+        }
+
+        .meta-chip svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+
+        .offer-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .offer-amount {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.2rem; font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .offer-amount.accepted { color: var(--green); }
+        .offer-amount.pending  { color: var(--amber); }
+        .offer-amount.rejected { color: var(--muted); }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 0.65rem; font-weight: 500;
+            font-family: 'DM Mono', monospace;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        .status-pill.pending  { background: var(--amber-dim); color: var(--amber); }
+        .status-pill.accepted { background: var(--green-dim); color: var(--green); }
+        .status-pill.rejected { background: var(--red-dim);   color: var(--red);   }
+
+        .offer-row-footer {
+            border-top: 1px solid var(--border);
+            padding: 0.65rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .offer-type-tag {
+            font-size: 0.7rem;
+            color: var(--muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .offer-type-tag svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+
+        .withdraw-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem; font-weight: 500;
+            padding: 0.3rem 0.7rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            cursor: pointer; transition: all 0.15s;
+        }
+
+        .withdraw-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+        .accepted-banner {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 0.75rem; color: var(--green); font-weight: 500;
+        }
+
+        .accepted-banner svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+        /* ── Empty & skeleton ── */
+        .empty-state {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .empty-state svg { width: 36px; height: 36px; stroke: var(--subtle); fill: none; stroke-width: 1.5; stroke-linecap: round; margin-bottom: 0.75rem; }
+        .empty-state h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .empty-state p { font-size: 0.8rem; color: var(--muted); }
+
+        .skeleton { background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite; border-radius: 6px; }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.65rem 1.1rem;
+            font-size: 0.82rem; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .toast.success .toast-dot { background: var(--green); }
+        .toast.error .toast-dot { background: var(--red); }
+
+        /* ── Withdraw confirm ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem; opacity: 0; pointer-events: none;
+            transition: opacity 0.2s; z-index: 500;
+            backdrop-filter: blur(6px);
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 1.75rem;
+            max-width: 360px; width: 100%;
+            transform: translateY(16px) scale(0.97);
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+        .modal h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .modal p { font-size: 0.8rem; color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+        .btn-cancel { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; padding: 0.5rem 1rem; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+        .btn-cancel:hover { border-color: var(--border-light); color: var(--text); }
+
+        .btn-withdraw-confirm { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 0.5rem 1rem; background: var(--red-dim); border: 1px solid rgba(240,96,96,0.3); border-radius: 8px; color: var(--red); cursor: pointer; transition: all 0.15s; }
+        .btn-withdraw-confirm:hover { background: var(--red); color: #fff; }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .summary-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="logo-name">Dakdao</span>
+        </div>
+
+        <div class="nav-section">Main</div>
+        <a class="nav-item" href="worker-dashboard.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+        </a>
+        <a class="nav-item" href="worker-dashboard.html">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Available Tasks
+        </a>
+        <a class="nav-item active" href="#">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            My Offers
+            <span class="badge" id="pendingBadge">–</span>
+        </a>
+        <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            My Tasks
+        </a>
+
+        <div class="nav-section">Account</div>
+        <a class="nav-item" href="profile.html">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+        </a>
+        <button class="nav-item" onclick="logout()">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+        </button>
+
+        <div class="sidebar-footer">
+            <div class="worker-chip">
+                <div class="worker-av-sm" id="sidebarAvatar">–</div>
+                <div class="worker-info">
+                    <div class="wname" id="sidebarName">–</div>
+                    <div class="wrole">Worker</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="topbar">
+            <div class="page-title">
+                <h1>My Offers</h1>
+                <p>Track every offer you've sent and its current status</p>
+            </div>
+        </div>
+
+        <!-- Summary stats -->
+        <div class="summary-row">
+            <div class="sum-card">
+                <div class="sum-num" id="sumTotal">–</div>
+                <div class="sum-label">Total sent</div>
+            </div>
+            <div class="sum-card">
+                <div class="sum-num" style="color:var(--amber)" id="sumPending">–</div>
+                <div class="sum-label">Pending</div>
+            </div>
+            <div class="sum-card">
+                <div class="sum-num" style="color:var(--green)" id="sumAccepted">–</div>
+                <div class="sum-label">Accepted</div>
+            </div>
+            <div class="sum-card">
+                <div class="sum-num" style="color:var(--muted)" id="sumRejected">–</div>
+                <div class="sum-label">Declined</div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterOffers('all', this)">All <span class="fc" id="fcAll">0</span></button>
+            <button class="filter-btn" onclick="filterOffers('pending', this)">Pending <span class="fc" id="fcPending">0</span></button>
+            <button class="filter-btn" onclick="filterOffers('accepted', this)">Accepted <span class="fc" id="fcAccepted">0</span></button>
+            <button class="filter-btn" onclick="filterOffers('rejected', this)">Declined <span class="fc" id="fcRejected">0</span></button>
+        </div>
+
+        <!-- Offers list -->
+        <div class="offers-list" id="offersList">
+            <!-- skeleton -->
+            ${[1,2,3].map(() => `
+            <div class="offer-row-card">
+                <div class="offer-row-top">
+                    <div>
+                        <div class="skeleton" style="height:14px;width:70%;margin-bottom:8px"></div>
+                        <div class="skeleton" style="height:11px;width:45%"></div>
+                    </div>
+                    <div class="skeleton" style="height:28px;width:80px"></div>
+                </div>
+            </div>`).join("")}
+        </div>
+    </main>
+</div>
+
+<!-- Withdraw confirm modal -->
+<div class="modal-overlay" id="withdrawModal" onclick="handleModalOverlay(event)">
+    <div class="modal">
+        <h3>Withdraw this offer?</h3>
+        <p>The customer won't see your offer anymore. You can send a new one if you change your mind.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">Keep it</button>
+            <button class="btn-withdraw-confirm" id="withdrawConfirmBtn" onclick="executeWithdraw()">Withdraw</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span class="toast-dot"></span>
+    <span id="toastMsg">–</span>
+</div>
+
+<script>
+    const API   = "http://localhost:5000";
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!token || !user) { window.location.href = "login.html"; }
+
+    // Set sidebar
+    const initials = user?.name ? user.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase() : "W";
+    document.getElementById("sidebarAvatar").textContent = initials;
+    document.getElementById("sidebarName").textContent   = user?.name?.split(" ")[0] || "–";
+
+    let allOffers      = [];
+    let pendingWithdraw = null;
+
+    const typeLabel = { initial: "Initial offer", increase: "Counter — higher", decrease: "Counter — lower" };
+    const typeIcon  = { initial: "💬", increase: "📈", decrease: "📉" };
+
+    // ── Helpers ───────────────────────────────────────────────────
+    const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    function fmtDate(d) {
+        if (!d) return "–";
+        return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function fmtPrice(p) { return p ? "৳ " + Number(p).toLocaleString("en-IN") : "–"; }
+
+    function showToast(msg, type = "success") {
+        const t = document.getElementById("toast");
+        document.getElementById("toastMsg").textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    // ── Load offers ───────────────────────────────────────────────
+    async function loadOffers() {
+        try {
+            const res = await fetch(`${API}/api/offers/my`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            allOffers = data.offers || [];
+
+            const pending  = allOffers.filter(o => o.status === "pending").length;
+            const accepted = allOffers.filter(o => o.status === "accepted").length;
+            const rejected = allOffers.filter(o => o.status === "rejected").length;
+
+            // Stats
+            document.getElementById("sumTotal").textContent    = allOffers.length;
+            document.getElementById("sumPending").textContent  = pending;
+            document.getElementById("sumAccepted").textContent = accepted;
+            document.getElementById("sumRejected").textContent = rejected;
+
+            // Filter counts
+            document.getElementById("fcAll").textContent      = allOffers.length;
+            document.getElementById("fcPending").textContent  = pending;
+            document.getElementById("fcAccepted").textContent = accepted;
+            document.getElementById("fcRejected").textContent = rejected;
+
+            // Sidebar badge
+            document.getElementById("pendingBadge").textContent = pending || "0";
+
+            renderOffers(allOffers);
+
+        } catch (e) {
+            document.getElementById("offersList").innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h3>Could not load offers</h3>
+                    <p>Check your connection and try again</p>
+                </div>`;
+        }
+    }
+
+    function renderOffers(offers) {
+        const list = document.getElementById("offersList");
+
+        if (offers.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    <h3>No offers here</h3>
+                    <p>Browse available tasks and send your first offer</p>
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = offers.map(offer => `
+            <div class="offer-row-card ${offer.status}" id="offerCard-${offer.id}">
+                <div class="offer-row-top">
+                    <div>
+                        <div class="offer-task-desc">
+                            ${esc(offer.description?.slice(0,90) || "Task")}${offer.description?.length > 90 ? "…" : ""}
+                        </div>
+                        <div class="offer-task-meta">
+                            <span class="meta-chip">
+                                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                ${esc(offer.location_text || "No location")}
+                            </span>
+                            <span class="meta-chip">
+                                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                ${esc(offer.customer_name || "Customer")}
+                            </span>
+                            <span class="meta-chip">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                ${fmtDate(offer.created_at)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="offer-right">
+                        <div class="offer-amount ${offer.status}">${fmtPrice(offer.offer_price)}</div>
+                        <span class="status-pill ${offer.status}">${offer.status}</span>
+                    </div>
+                </div>
+
+                <div class="offer-row-footer">
+                    <div class="offer-type-tag">
+                        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        ${typeIcon[offer.offer_type] || ""} ${typeLabel[offer.offer_type] || offer.offer_type}
+                        ${offer.task_status ? ` &nbsp;·&nbsp; Task: <span style="text-transform:capitalize">${offer.task_status}</span>` : ""}
+                    </div>
+                    <div>
+                        ${offer.status === "pending" ? `
+                            <button class="withdraw-btn" onclick="confirmWithdraw(${offer.id})">Withdraw</button>
+                        ` : offer.status === "accepted" ? `
+                            <div class="accepted-banner">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                Offer accepted — task confirmed
+                            </div>
+                        ` : `
+                            <span style="font-size:0.72rem;color:var(--subtle)">Offer declined by customer</span>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    // ── Filter ────────────────────────────────────────────────────
+    function filterOffers(status, el) {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        el.classList.add("active");
+        const filtered = status === "all" ? allOffers : allOffers.filter(o => o.status === status);
+        renderOffers(filtered);
+    }
+
+    // ── Withdraw ──────────────────────────────────────────────────
+    function confirmWithdraw(offerId) {
+        pendingWithdraw = offerId;
+        document.getElementById("withdrawModal").classList.add("open");
+    }
+
+    function closeModal() {
+        document.getElementById("withdrawModal").classList.remove("open");
+        pendingWithdraw = null;
+    }
+
+    function handleModalOverlay(e) {
+        if (e.target === document.getElementById("withdrawModal")) closeModal();
+    }
+
+    async function executeWithdraw() {
+        if (!pendingWithdraw) return;
+        const btn = document.getElementById("withdrawConfirmBtn");
+        btn.disabled = true;
+        btn.textContent = "Withdrawing…";
+
+        try {
+            const res = await fetch(`${API}/api/offers/${pendingWithdraw}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                closeModal();
+                showToast("Offer withdrawn", "success");
+                // Remove from local list
+                allOffers = allOffers.filter(o => o.id !== pendingWithdraw);
+                // Refresh stats
+                const pending  = allOffers.filter(o => o.status === "pending").length;
+                document.getElementById("sumTotal").textContent    = allOffers.length;
+                document.getElementById("sumPending").textContent  = pending;
+                document.getElementById("fcAll").textContent       = allOffers.length;
+                document.getElementById("fcPending").textContent   = pending;
+                document.getElementById("pendingBadge").textContent = pending || "0";
+                renderOffers(allOffers);
+            } else {
+                showToast(data.message || "Failed to withdraw", "error");
+                btn.disabled = false;
+                btn.textContent = "Withdraw";
+            }
+        } catch (e) {
+            showToast("Could not connect to server", "error");
+            btn.disabled = false;
+            btn.textContent = "Withdraw";
+        }
+    }
+
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+    // ── Boot ──────────────────────────────────────────────────────
+    loadOffers();
+</script>
+</body>
+</html>

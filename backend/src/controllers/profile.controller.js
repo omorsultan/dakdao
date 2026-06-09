@@ -153,3 +153,60 @@ exports.createCustomerProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// const pool = require("../config/db");
+
+// GET profile
+exports.getProfile = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, name, mobile, role, email, address, avatar_url, created_at
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ message: "User not found" });
+        res.json({ success: true, profile: rows[0] });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// UPDATE profile
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, email, address } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({ message: "Name is required" });
+        }
+
+        await pool.query(
+            `UPDATE users SET name = ?, email = ?, address = ? WHERE id = ?`,
+            [name.trim(), email?.trim() || null, address?.trim() || null, req.user.id]
+        );
+
+        // Return updated user
+        const [rows] = await pool.query(
+            `SELECT id, name, mobile, role, email, address, avatar_url, created_at
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+
+        res.json({ success: true, profile: rows[0], message: "Profile updated" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getCustomerProfile = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT * FROM customer_profile WHERE user_id = ?",
+            [req.user.id]
+        );
+        if (rows.length === 0) {
+            return res.json({ success: true, profile: null });
+        }
+        res.json({ success: true, profile: rows[0] });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

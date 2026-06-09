@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers — Dakdao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f5f4f0;
+            --card: #ffffff;
+            --border: #e2e0d8;
+            --border2: #ccc9bf;
+            --text: #1a1917;
+            --muted: #6b6963;
+            --subtle: #aeaba4;
+            --accent: #1a1917;
+            --green: #1a6644;
+            --green-dim: rgba(26,102,68,0.1);
+            --green-border: rgba(26,102,68,0.25);
+            --red: #c0392b;
+            --red-dim: rgba(192,57,43,0.08);
+            --red-border: rgba(192,57,43,0.2);
+            --amber: #92540a;
+            --amber-dim: rgba(146,84,10,0.1);
+            --blue: #1a52a8;
+            --blue-dim: rgba(26,82,168,0.08);
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Nav ── */
+        .topnav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 12px; }
+
+        .back-link {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.8rem; color: var(--muted);
+            text-decoration: none; transition: color 0.15s;
+        }
+        .back-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+        .back-link:hover { color: var(--text); }
+
+        .divider-v { width: 1px; height: 16px; background: var(--border); }
+
+        .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .brand-mark { width: 28px; height: 28px; background: var(--text); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+        .brand-mark svg { width: 13px; height: 13px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+        .brand-name { font-size: 0.95rem; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .logout-btn { font-family: 'Sora', sans-serif; font-size: 0.78rem; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 7px; padding: 0.35rem 0.75rem; cursor: pointer; transition: all 0.15s; }
+        .logout-btn:hover { border-color: var(--border2); color: var(--text); }
+
+        /* ── Page ── */
+        .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        .page-head { margin-bottom: 1.75rem; }
+        .page-head h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
+        .page-head p { font-size: 0.84rem; color: var(--muted); margin-top: 0.3rem; }
+
+        /* ── Task tabs ── */
+        .task-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .task-tab {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.45rem 0.9rem;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .task-tab .tab-count {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            background: var(--bg);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+        }
+
+        .task-tab.active {
+            background: var(--text);
+            color: #fff;
+            border-color: var(--text);
+        }
+
+        .task-tab.active .tab-count {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        /* ── Layout ── */
+        .offers-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        /* ── Task list ── */
+        .task-list-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            position: sticky;
+            top: 74px;
+        }
+
+        .task-list-head {
+            padding: 0.9rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .task-list-item {
+            padding: 0.85rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .task-list-item:last-child { border-bottom: none; }
+        .task-list-item:hover { background: var(--bg); }
+
+        .task-list-item.active {
+            background: #f0efeb;
+            border-left: 3px solid var(--text);
+        }
+
+        .task-list-item h4 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            line-height: 1.35;
+        }
+
+        .task-list-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .task-list-loc {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .offer-count-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+        }
+
+        .offer-count-badge.has-offers {
+            background: var(--amber-dim);
+            color: var(--amber);
+        }
+
+        .offer-count-badge.no-offers {
+            background: var(--bg);
+            color: var(--subtle);
+        }
+
+        /* ── Offers panel ── */
+        .offers-panel { display: flex; flex-direction: column; gap: 10px; }
+
+        .empty-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .empty-panel svg {
+            width: 40px; height: 40px;
+            stroke: var(--subtle); fill: none;
+            stroke-width: 1.5; stroke-linecap: round;
+            margin-bottom: 0.9rem;
+        }
+
+        .empty-panel h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.35rem; }
+        .empty-panel p { font-size: 0.82rem; color: var(--muted); }
+
+        /* ── Offer card ── */
+        .offer-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: box-shadow 0.15s;
+        }
+
+        .offer-card:hover { box-shadow: var(--shadow); }
+
+        .offer-card.accepted { border-color: var(--green-border); }
+        .offer-card.rejected { opacity: 0.6; }
+
+        .offer-card-head {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .worker-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .worker-av {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .worker-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .worker-skills {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        .offer-price-big {
+            text-align: right;
+        }
+
+        .offer-price-big .amount {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .offer-price-big .type-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        .offer-card-body {
+            padding: 0 1.25rem 1rem;
+        }
+
+        .offer-note {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.5;
+            margin-bottom: 0.85rem;
+            font-style: italic;
+        }
+
+        .offer-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .offer-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .offer-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .offer-meta-item svg {
+            width: 11px; height: 11px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+        }
+
+        .offer-actions { display: flex; gap: 8px; }
+
+        .btn-reject {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 0.45rem 0.9rem;
+            background: none;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-reject:hover { border-color: var(--red-border); color: var(--red); background: var(--red-dim); }
+
+        .btn-accept {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.45rem 1rem;
+            background: var(--green);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-accept svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+        .btn-accept:hover { background: #155535; }
+        .btn-accept:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .status-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .status-badge.accepted { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+        .status-badge.rejected { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red-border); }
+        .status-badge.pending  { background: var(--amber-dim); color: var(--amber); }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.65rem;
+            color: var(--green);
+            background: var(--green-dim);
+            padding: 0.15rem 0.45rem;
+            border-radius: 10px;
+        }
+
+        .verified-badge svg { width: 9px; height: 9px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+        /* ── Skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg, #eeece8 25%, #e4e2de 50%, #eeece8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: #fff;
+            border-radius: 10px;
+            padding: 0.65rem 1.1rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            z-index: 999;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .toast.success .toast-dot { background: #4ade80; }
+        .toast.error .toast-dot { background: #f87171; }
+
+        /* ── Confirm modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 500;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            max-width: 380px;
+            width: 100%;
+            transform: translateY(16px) scale(0.97);
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+        .modal-icon {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-icon.accept { background: var(--green-dim); }
+        .modal-icon.reject { background: var(--red-dim); }
+
+        .modal-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+        .modal-icon.accept svg { stroke: var(--green); }
+        .modal-icon.reject svg { stroke: var(--red); }
+
+        .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .modal p { font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; }
+
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+        .btn-modal-cancel {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.82rem; font-weight: 500;
+            padding: 0.55rem 1rem;
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 8px; color: var(--muted);
+            cursor: pointer; transition: all 0.15s;
+        }
+
+        .btn-modal-cancel:hover { border-color: var(--border2); color: var(--text); }
+
+        .btn-modal-confirm {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.82rem; font-weight: 600;
+            padding: 0.55rem 1.1rem;
+            border: none; border-radius: 8px;
+            color: #fff; cursor: pointer; transition: all 0.15s;
+        }
+
+        .btn-modal-confirm.accept { background: var(--green); }
+        .btn-modal-confirm.accept:hover { background: #155535; }
+        .btn-modal-confirm.reject { background: var(--red); }
+        .btn-modal-confirm.reject:hover { background: #a32920; }
+
+        @media (max-width: 720px) {
+            .offers-layout { grid-template-columns: 1fr; }
+            .task-list-card { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topnav">
+    <div class="nav-left">
+        <a class="back-link" href="customer-home.html">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Dashboard
+        </a>
+        <div class="divider-v"></div>
+        <a class="brand" href="customer-home.html">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="brand-name">Dakdao</span>
+        </a>
+    </div>
+    <div class="nav-right">
+        <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+</nav>
+
+<div class="page">
+    <div class="page-head">
+        <h1>Offers received</h1>
+        <p id="pageSubtext">Select a task to view its offers</p>
+    </div>
+
+    <!-- Task filter tabs -->
+    <div class="task-tabs" id="taskTabs">
+        <button class="task-tab active" onclick="filterTasks('all', this)">
+            All tasks <span class="tab-count" id="tabCountAll">0</span>
+        </button>
+        <button class="task-tab" onclick="filterTasks('negotiating', this)">
+            Has offers <span class="tab-count" id="tabCountOffers">0</span>
+        </button>
+        <button class="task-tab" onclick="filterTabs('open', this)">
+            Open <span class="tab-count" id="tabCountOpen">0</span>
+        </button>
+        <button class="task-tab" onclick="filterTabs('confirmed', this)">
+            Confirmed <span class="tab-count" id="tabCountConfirmed">0</span>
+        </button>
+    </div>
+
+    <div class="offers-layout">
+        <!-- Left: Task list -->
+        <div class="task-list-card">
+            <div class="task-list-head">Your tasks</div>
+            <div id="taskListBody">
+                <div style="padding:1.5rem;text-align:center">
+                    <div class="skeleton" style="height:14px;width:80%;margin:0 auto 8px"></div>
+                    <div class="skeleton" style="height:14px;width:60%;margin:0 auto 8px"></div>
+                    <div class="skeleton" style="height:14px;width:70%;margin:0 auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Offers -->
+        <div class="offers-panel" id="offersPanel">
+            <div class="empty-panel">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <h3>Select a task</h3>
+                <p>Pick a task from the left to see offers from workers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal" onclick="handleModalOverlay(event)">
+    <div class="modal">
+        <div class="modal-icon" id="modalIcon">
+            <svg id="modalIconSvg" viewBox="0 0 24 24"></svg>
+        </div>
+        <h3 id="modalTitle">Confirm action</h3>
+        <p id="modalDesc">Are you sure?</p>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-modal-confirm" id="modalConfirmBtn" onclick="executeAction()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span class="toast-dot"></span>
+    <span id="toastMsg">–</span>
+</div>
+
+<script>
+    const API   = "http://localhost:5000";
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!token || !user) { window.location.href = "login.html"; }
+
+    let allTasks        = [];
+    let filteredTasks   = [];
+    let activeTaskId    = null;
+    let pendingAction   = null; // { type: 'accept'|'reject', offerId, taskId }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    function fmtDate(d) {
+        if (!d) return "–";
+        return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function fmtPrice(p) {
+        if (!p) return "Open";
+        return "৳ " + Number(p).toLocaleString("en-IN");
+    }
+
+    function initials(name) {
+        if (!name) return "?";
+        return name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+    }
+
+    function showToast(msg, type = "success") {
+        const t = document.getElementById("toast");
+        document.getElementById("toastMsg").textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    // ── Load all customer tasks ───────────────────────────────────
+    async function loadTasks() {
+        try {
+            const res = await fetch(`${API}/api/tasks/my`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            allTasks = data.tasks || [];
+            filteredTasks = [...allTasks];
+
+            // Update tab counts
+            document.getElementById("tabCountAll").textContent       = allTasks.length;
+            document.getElementById("tabCountOffers").textContent    = allTasks.filter(t => t.status === "negotiating").length;
+            document.getElementById("tabCountOpen").textContent      = allTasks.filter(t => t.status === "open").length;
+            document.getElementById("tabCountConfirmed").textContent = allTasks.filter(t => t.status === "confirmed").length;
+
+            renderTaskList(allTasks);
+
+            // Auto-select first task that has offers
+            const firstWithOffers = allTasks.find(t => t.status === "negotiating" || t.status === "confirmed");
+            if (firstWithOffers) selectTask(firstWithOffers.id);
+            else if (allTasks.length > 0) selectTask(allTasks[0].id);
+
+        } catch (e) {
+            document.getElementById("taskListBody").innerHTML = `
+                <div style="padding:1.5rem;text-align:center;font-size:0.8rem;color:var(--muted)">
+                    Could not load tasks
+                </div>`;
+        }
+    }
+
+    function renderTaskList(tasks) {
+        const body = document.getElementById("taskListBody");
+        if (tasks.length === 0) {
+            body.innerHTML = `<div style="padding:1.5rem;text-align:center;font-size:0.8rem;color:var(--muted)">No tasks found</div>`;
+            return;
+        }
+
+        body.innerHTML = tasks.map(task => {
+            const hasOffers = ["negotiating","confirmed"].includes(task.status);
+            return `
+                <div class="task-list-item ${activeTaskId === task.id ? 'active' : ''}"
+                     onclick="selectTask(${task.id})"
+                     id="taskItem-${task.id}">
+                    <h4>${esc(task.description.slice(0,55))}${task.description.length > 55 ? "…" : ""}</h4>
+                    <div class="task-list-meta">
+                        <span class="task-list-loc">${esc(task.location_text || "No location")}</span>
+                        <span class="offer-count-badge ${hasOffers ? 'has-offers' : 'no-offers'}" id="taskBadge-${task.id}">
+                            ${task.status === "confirmed" ? "✓ Confirmed" : task.status === "negotiating" ? "Has offers" : task.status}
+                        </span>
+                    </div>
+                </div>`;
+        }).join("");
+    }
+
+    // ── Filter tasks ──────────────────────────────────────────────
+    function filterTasks(status, el) {
+        document.querySelectorAll(".task-tab").forEach(b => b.classList.remove("active"));
+        el.classList.add("active");
+        filteredTasks = status === "all" ? [...allTasks] : allTasks.filter(t => t.status === status);
+        renderTaskList(filteredTasks);
+    }
+
+    // alias for tabs
+    function filterTabs(status, el) { filterTasks(status, el); }
+
+    // ── Select task & load its offers ─────────────────────────────
+    async function selectTask(taskId) {
+        activeTaskId = taskId;
+
+        // Highlight in list
+        document.querySelectorAll(".task-list-item").forEach(el => el.classList.remove("active"));
+        const item = document.getElementById(`taskItem-${taskId}`);
+        if (item) item.classList.add("active");
+
+        // Show loading
+        document.getElementById("offersPanel").innerHTML = `
+            <div class="offer-card">
+                <div class="offer-card-head">
+                    <div class="skeleton" style="height:40px;width:40px;border-radius:50%"></div>
+                    <div style="flex:1;margin-left:10px">
+                        <div class="skeleton" style="height:14px;width:50%;margin-bottom:6px"></div>
+                        <div class="skeleton" style="height:11px;width:35%"></div>
+                    </div>
+                    <div class="skeleton" style="height:24px;width:70px"></div>
+                </div>
+            </div>`;
+
+        const task = allTasks.find(t => t.id === taskId);
+        if (task) {
+            document.getElementById("pageSubtext").textContent =
+                `${task.description.slice(0,60)}${task.description.length > 60 ? "…" : ""}`;
+        }
+
+        try {
+            const res = await fetch(`${API}/api/tasks/${taskId}/offers`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            const offers = data.offers || [];
+            renderOffers(offers, task);
+
+        } catch (e) {
+            document.getElementById("offersPanel").innerHTML = `
+                <div class="empty-panel">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h3>Could not load offers</h3>
+                    <p>Check your connection and try again</p>
+                </div>`;
+        }
+    }
+
+    function renderOffers(offers, task) {
+        const panel = document.getElementById("offersPanel");
+        const taskConfirmed = task?.status === "confirmed";
+
+        if (offers.length === 0) {
+            panel.innerHTML = `
+                <div class="empty-panel">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <h3>No offers yet</h3>
+                    <p>Workers haven't sent offers on this task yet. Check back soon.</p>
+                </div>`;
+            return;
+        }
+
+        const typeLabel = { initial: "Initial offer", increase: "Counter — higher", decrease: "Counter — lower" };
+
+        panel.innerHTML = offers.map(offer => {
+            const isPending  = offer.status === "pending";
+            const isAccepted = offer.status === "accepted";
+            const isRejected = offer.status === "rejected";
+
+            return `
+            <div class="offer-card ${offer.status}" id="offerCard-${offer.id}">
+                <div class="offer-card-head">
+                    <div class="worker-row">
+                        <div class="worker-av">${initials(offer.worker_name)}</div>
+                        <div>
+                            <div class="worker-name">
+                                ${esc(offer.worker_name || "Worker")}
+                                ${offer.is_verified ? `<span class="verified-badge"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Verified</span>` : ""}
+                            </div>
+                            <div class="worker-skills">${esc(offer.skills ? offer.skills.split(",").slice(0,3).join(" · ") : offer.worker_mobile || "–")}</div>
+                        </div>
+                    </div>
+                    <div class="offer-price-big">
+                        <div class="amount">${fmtPrice(offer.offer_price)}</div>
+                        <div class="type-label">${typeLabel[offer.offer_type] || offer.offer_type}</div>
+                    </div>
+                </div>
+
+                ${offer.note ? `<div class="offer-card-body"><div class="offer-note">"${esc(offer.note)}"</div></div>` : ""}
+
+                <div class="offer-card-footer">
+                    <div class="offer-meta">
+                        <span class="offer-meta-item">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            ${fmtDate(offer.created_at)}
+                        </span>
+                    </div>
+                    <div class="offer-actions">
+                        ${isPending && !taskConfirmed ? `
+                            <button class="btn-reject" onclick="confirmReject(${offer.id}, ${task?.id})">Decline</button>
+                            <button class="btn-accept" onclick="confirmAccept(${offer.id}, ${task?.id}, '${esc(offer.worker_name)}', '${fmtPrice(offer.offer_price)}')">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                Accept
+                            </button>` : `
+                            <span class="status-badge ${offer.status}">${isAccepted ? "✓ Accepted" : isRejected ? "Declined" : offer.status}</span>`
+                        }
+                    </div>
+                </div>
+            </div>`;
+        }).join("");
+    }
+
+    // ── Confirm modal ─────────────────────────────────────────────
+    function confirmAccept(offerId, taskId, workerName, price) {
+        pendingAction = { type: "accept", offerId, taskId };
+        document.getElementById("modalIcon").className = "modal-icon accept";
+        document.getElementById("modalIconSvg").setAttribute("viewBox","0 0 24 24");
+        document.getElementById("modalIconSvg").innerHTML = `<polyline points="20 6 9 17 4 12"/>`;
+        document.getElementById("modalTitle").textContent = "Accept this offer?";
+        document.getElementById("modalDesc").textContent  =
+            `You're accepting ${workerName}'s offer of ${price}. All other offers will be declined and the task will be marked confirmed.`;
+        const btn = document.getElementById("modalConfirmBtn");
+        btn.className = "btn-modal-confirm accept";
+        btn.textContent = "Accept offer";
+        document.getElementById("confirmModal").classList.add("open");
+    }
+
+    function confirmReject(offerId, taskId) {
+        pendingAction = { type: "reject", offerId, taskId };
+        document.getElementById("modalIcon").className = "modal-icon reject";
+        document.getElementById("modalIconSvg").setAttribute("viewBox","0 0 24 24");
+        document.getElementById("modalIconSvg").innerHTML = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
+        document.getElementById("modalTitle").textContent = "Decline this offer?";
+        document.getElementById("modalDesc").textContent  = "The worker will be notified that their offer was declined.";
+        const btn = document.getElementById("modalConfirmBtn");
+        btn.className = "btn-modal-confirm reject";
+        btn.textContent = "Decline offer";
+        document.getElementById("confirmModal").classList.add("open");
+    }
+
+    function closeModal() {
+        document.getElementById("confirmModal").classList.remove("open");
+        pendingAction = null;
+    }
+
+    function handleModalOverlay(e) {
+        if (e.target === document.getElementById("confirmModal")) closeModal();
+    }
+
+    async function executeAction() {
+        if (!pendingAction) return;
+        const { type, offerId, taskId } = pendingAction;
+        const btn = document.getElementById("modalConfirmBtn");
+        btn.disabled = true;
+        btn.textContent = type === "accept" ? "Accepting…" : "Declining…";
+
+        const endpoint = type === "accept"
+            ? `${API}/api/offers/${offerId}/accept`
+            : `${API}/api/offers/${offerId}/reject`;
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                closeModal();
+                showToast(data.message || (type === "accept" ? "Offer accepted!" : "Offer declined"), "success");
+
+                // Update task status locally
+                const task = allTasks.find(t => t.id === taskId);
+                if (task && type === "accept") task.status = "confirmed";
+
+                // Reload offers for this task
+                setTimeout(() => selectTask(taskId), 400);
+
+                // Refresh task list badge
+                renderTaskList(filteredTasks);
+
+            } else {
+                showToast(data.message || "Action failed", "error");
+                btn.disabled = false;
+                btn.textContent = type === "accept" ? "Accept offer" : "Decline offer";
+            }
+        } catch (e) {
+            showToast("Could not connect to server", "error");
+            btn.disabled = false;
+            btn.textContent = type === "accept" ? "Accept offer" : "Decline offer";
+        }
+    }
+
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+    // ── Boot ──────────────────────────────────────────────────────
+    loadTasks();
+</script>
+</body>
+</html>

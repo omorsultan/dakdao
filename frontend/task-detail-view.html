@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans min-h-screen text-gray-800">
+
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="customer-my-tasks-list.html" class="h-9 w-9 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200 text-gray-600 transition shadow-sm">
+                    <i class="fa-solid fa-chevron-left text-sm"></i>
+                </a>
+                <div>
+                    <span class="text-xs text-gray-400 font-medium block">Workspace / Management</span>
+                    <span id="nav-task-id" class="font-bold text-gray-900 tracking-tight">Loading Task...</span>
+                </div>
+            </div>
+            <div>
+                <span id="task-status-badge" class="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wider">
+                    Checking...
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="error-container" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 hidden">
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl flex items-center space-x-3">
+            <i class="fa-solid fa-circle-exclamation text-xl text-rose-500"></i>
+            <span id="error-message">Could not verify connection parameters.</span>
+        </div>
+    </div>
+
+    <main id="main-content" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+                        <div>
+                            <span id="task-category" class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">
+                                --
+                            </span>
+                            <h1 id="task-header-title" class="text-2xl sm:text-3xl font-black text-gray-900 mt-3">Task Details</h1>
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fa-solid fa-clock mr-1"></i> Posted on: <span id="task-timestamp" class="text-gray-600 font-medium">--</span>
+                            </p>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-right min-w-[140px]">
+                            <p class="text-xs font-bold uppercase tracking-wider text-emerald-700/70">Initial Budget</p>
+                            <p id="task-price" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-0.5">$0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Project Description & Scope</h3>
+                        <div id="task-description" class="text-gray-700 leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-100 text-sm whitespace-pre-line font-mono">
+                            Loading text summary context blocks...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 tracking-widest">Client Contact Card</h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <div id="client-avatar" class="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
+                                -
+                            </div>
+                            <div>
+                                <p id="client-name" class="text-base font-bold text-gray-900">Loading Client Profile...</p>
+                                <p id="client-meta-id" class="text-xs text-gray-400">Owner ID Reference: --</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <a id="client-call-btn" href="#" class="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition">
+                                <i class="fa-solid fa-phone text-emerald-500 mr-2"></i> Call Client
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 tracking-widest">Service Location Pin</h3>
+                    
+                    <div class="flex items-start space-x-2 text-gray-800 mb-4">
+                        <i class="fa-solid fa-location-dot text-rose-500 text-lg mt-0.5 flex-shrink-0"></i>
+                        <p id="location-text" class="text-base font-bold capitalize leading-tight">--</p>
+                    </div>
+
+                    <div id="map-iframe-wrapper" class="w-full h-52 bg-gray-100 border border-gray-200 rounded-xl overflow-hidden shadow-inner relative group mb-4">
+                        </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                            <span class="block text-[10px] uppercase font-bold text-gray-400">Latitude</span>
+                            <span id="coord-lat" class="font-mono font-bold text-xs text-gray-700">--</span>
+                        </div>
+                        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                            <span class="block text-[10px] uppercase font-bold text-gray-400">Longitude</span>
+                            <span id="coord-lng" class="font-mono font-bold text-xs text-gray-700">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/30 border border-indigo-100 text-xs text-indigo-900 space-y-2">
+                    <p class="font-bold flex items-center"><i class="fa-solid fa-shield-halved mr-1.5 text-indigo-500"></i> Workspace Guidelines</p>
+                    <p class="text-indigo-700/90 leading-relaxed">
+                        Verify address conditions and specifications carefully before arranging final deal agreements or closing parameters with assigned workspace contributors.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Read URL Parameters (?id=X)
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskId = urlParams.get('id');
+
+            // Defensive check: if no ID parameter is attached to the link, block processing and show error
+            if (!taskId) {
+                showError("No Task ID was specified in the URL address bar link. Please go back and select a task.");
+                return;
+            }
+
+            // Target API URL matching your backend setup
+            const API_URL = `http://localhost:5000/api/tasks/${taskId}`;
+
+            async function loadSingleTaskDetails() {
+                try {
+                    const token = localStorage.getItem("token");
+
+                    const response = await fetch(API_URL, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}` // Satisfies your 'protect' middleware gate
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        showError("Session unauthorized or authentication token missing. Please log in again.");
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Endpoint reported status parameter code: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success && data.task) {
+                        populateTaskDetails(data.task);
+                    } else {
+                        showError("The system returned a successful channel, but could not interpret task array schemas.");
+                    }
+
+                } catch (error) {
+                    console.error("Runtime Fetch Exception Block:", error);
+                    showError(`Unable to bridge pipeline securely to API node: ${error.message}`);
+                }
+            }
+
+            // 2. Inject Database Columns into DOM Nodes
+            function populateTaskDetails(task) {
+                // Nav elements and headings
+                document.getElementById("nav-task-id").innerText = `Task Reference ID: #${task.id}`;
+                document.getElementById("task-header-title").innerText = `Task Summary Block #${task.id}`;
+                document.getElementById("task-category").innerText = task.category_name || "General Structural";
+                document.getElementById("task-price").innerText = `$${parseFloat(task.initial_price || 0).toFixed(2)}`;
+                document.getElementById("task-description").innerText = task.description;
+                
+                // Location & Contacts
+                document.getElementById("location-text").innerText = task.location_text;
+                document.getElementById("client-name").innerText = task.customer_name || "Anonymous User Name";
+                document.getElementById("client-meta-id").innerText = `Owner ID Reference: #${task.customer_id}`;
+                
+                // Longitude Latitude displays
+                document.getElementById("coord-lat").innerText = parseFloat(task.latitude || 0).toFixed(6);
+                document.getElementById("coord-lng").innerText = parseFloat(task.longitude || 0).toFixed(6);
+
+                // Phone anchor linking structure
+                document.getElementById("client-call-btn").setAttribute("href", `tel:${task.customer_mobile}`);
+
+                // Simple letter initials icon constructor
+                if (task.customer_name) {
+                    document.getElementById("client-avatar").innerText = task.customer_name.charAt(0).toUpperCase();
+                }
+
+                // Dynamic Date conversion system
+                const timestampDate = new Date(task.created_at);
+                document.getElementById("task-timestamp").innerText = `${timestampDate.toLocaleDateString()} at ${timestampDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+                // Status tag design layout router updates
+                const statusBadge = document.getElementById("task-status-badge");
+                statusBadge.innerText = task.status;
+                if (task.status === "open") {
+                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wider";
+                } else if (task.status === "negotiating") {
+                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wider animate-pulse";
+                } else if (task.status === "completed") {
+                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider";
+                }
+
+                // 3. Dynamic Map Rendering Frame Logic Engine (OpenStreetMap)
+                const lat = parseFloat(task.latitude);
+                const lng = parseFloat(task.longitude);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    const viewDelta = 0.008; // Adjust focus zoom diameter radius
+                    const minLng = (lng - viewDelta).toFixed(4);
+                    const minLat = (lat - viewDelta).toFixed(4);
+                    const maxLng = (lng + viewDelta).toFixed(4);
+                    const maxLat = (lat + viewDelta).toFixed(4);
+
+                    document.getElementById("map-iframe-wrapper").innerHTML = `
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}&amp;layer=mapnik&amp;marker=${lat}%2C${lng}"
+                            class="grayscale hover:grayscale-0 transition-all duration-300">
+                        </iframe>
+                    `;
+                } else {
+                    document.getElementById("map-iframe-wrapper").innerHTML = `
+                        <div class="h-full w-full flex flex-col items-center justify-center text-xs text-gray-400">
+                            <i class="fa-solid fa-map-location text-lg mb-1 text-gray-300"></i> No geographical coordinates recorded.
+                        </div>
+                    `;
+                }
+            }
+
+            // Error Render Helper Function
+            function showError(message) {
+                const container = document.getElementById("error-container");
+                const text = document.getElementById("error-message");
+                container.classList.remove("hidden");
+                text.innerText = message;
+                document.getElementById("main-content").classList.add("opacity-30", "pointer-events-none");
+            }
+
+            // Run execution logic loops
+            loadSingleTaskDetails();
+        });
+    </script>
+</body>
+</html>
