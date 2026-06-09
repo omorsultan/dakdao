@@ -15,5 +15,6 @@ router.post("/offers/:offer_id/counter", protect, offerCtrl.sendCounterOffer);
 
 // GENERIC ACCEPT (Accepts whichever counter/initial offer is currently active)
 router.patch("/offers/:offer_id/accept-negotiation", protect, offerCtrl.acceptNegotiation);
+router.get("/offers/confirmed-earnings", protect, offerCtrl.getConfirmedEarnings);
 
 module.exports = router;

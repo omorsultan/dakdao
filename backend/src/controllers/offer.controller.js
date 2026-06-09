@@ -381,3 +381,35 @@ exports.acceptNegotiation = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// GET TOTAL CONFIRMED WORKS AMOUNT FOR LOGGED-IN WORKER
+exports.getConfirmedEarnings = async (req, res) => {
+    try {
+        const workerId = req.user.id; 
+
+        const [rows] = await pool.query(
+            `SELECT 
+                SUM(COALESCE(o.offer_price, t.initial_price)) AS total_confirmed_amount
+             FROM tasks t
+             INNER JOIN task_offers o ON t.id = o.task_id
+             WHERE o.from_user_id = ? 
+               AND o.status = 'accepted' 
+               AND t.status = 'confirmed'`,
+            [workerId]
+        );
+
+        const totalAmount = rows[0].total_confirmed_amount || 0;
+
+        res.json({
+            success: true,
+            worker_id: workerId,
+            confirmed_amount: parseFloat(totalAmount)
+        });
+
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};

@@ -187,7 +187,7 @@
             document.getElementById("nav-task-id").innerText = `Task Reference ID: #${task.id}`;
             document.getElementById("task-header-title").innerText = `Task Summary Block #${task.id}`;
             document.getElementById("task-category").innerText = task.category_name || "General Structural";
-            document.getElementById("task-price").innerText = `$${parseFloat(task.initial_price || 0).toFixed(2)}`;
+            document.getElementById("task-price").innerText = `$${parseFloat(task.final_display_price || 0).toFixed(2)}`;
             document.getElementById("task-description").innerText = task.description;
             document.getElementById("location-text").innerText = task.location_text;
             document.getElementById("coord-lat").innerText = parseFloat(task.latitude || 0).toFixed(6);

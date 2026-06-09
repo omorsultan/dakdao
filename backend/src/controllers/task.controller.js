@@ -133,6 +133,7 @@ exports.getAssignedTasks = async (req, res) => {
 };
 
 
+
 // GET SINGLE TASK
 exports.getTaskById = async (req, res) => {
     try {
@@ -142,7 +143,12 @@ exports.getTaskById = async (req, res) => {
                 t.*,
                 c.name AS category_name,
                 u.name AS customer_name,
-                u.mobile AS customer_mobile
+                u.mobile AS customer_mobile,
+                -- Fallback logic: Use accepted offer price, otherwise use initial_price
+                COALESCE(
+                    (SELECT o.offer_price FROM task_offers o WHERE o.task_id = t.id AND o.status = 'accepted' LIMIT 1),
+                    t.initial_price
+                ) AS final_display_price
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.customer_id = u.id
