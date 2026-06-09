@@ -28,10 +28,14 @@
         </div>
     </nav>
 
-    <div id="error-container" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 hidden">
-        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl flex items-center space-x-3">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-2">
+        <div id="error-container" class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl flex items-center space-x-3 hidden">
             <i class="fa-solid fa-circle-exclamation text-xl text-rose-500"></i>
-            <span id="error-message">Could not verify connection parameters.</span>
+            <span id="error-message">Could not verify parameters.</span>
+        </div>
+        <div id="success-container" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center space-x-3 hidden">
+            <i class="fa-solid fa-circle-check text-xl text-emerald-500"></i>
+            <span id="success-message">Action processed successfully!</span>
         </div>
     </div>
 
@@ -66,21 +70,17 @@
                 </div>
 
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 tracking-widest">Client Contact Card</h3>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                        <div class="flex items-center space-x-4">
-                            <div id="client-avatar" class="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
-                                -
-                            </div>
-                            <div>
-                                <p id="client-name" class="text-base font-bold text-gray-900">Loading Client Profile...</p>
-                                <p id="client-meta-id" class="text-xs text-gray-400">Owner ID Reference: --</p>
-                            </div>
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900">Worker Bids & Offers</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Review worker application values below.</p>
                         </div>
-                        <div class="flex gap-2">
-                            <a id="client-call-btn" href="#" class="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition">
-                                <i class="fa-solid fa-phone text-emerald-500 mr-2"></i> Call Client
-                            </a>
+                        <span id="offers-count" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-bold">0 Active</span>
+                    </div>
+
+                    <div id="offers-list" class="space-y-4">
+                        <div class="text-center py-6 text-gray-400 text-sm">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i>Retrieving potential bids...
                         </div>
                     </div>
                 </div>
@@ -97,8 +97,7 @@
                         <p id="location-text" class="text-base font-bold capitalize leading-tight">--</p>
                     </div>
 
-                    <div id="map-iframe-wrapper" class="w-full h-52 bg-gray-100 border border-gray-200 rounded-xl overflow-hidden shadow-inner relative group mb-4">
-                        </div>
+                    <div id="map-iframe-wrapper" class="w-full h-52 bg-gray-100 border border-gray-200 rounded-xl overflow-hidden shadow-inner relative group mb-4"></div>
 
                     <div class="grid grid-cols-2 gap-2 text-center">
                         <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
@@ -113,9 +112,9 @@
                 </div>
 
                 <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/30 border border-indigo-100 text-xs text-indigo-900 space-y-2">
-                    <p class="font-bold flex items-center"><i class="fa-solid fa-shield-halved mr-1.5 text-indigo-500"></i> Workspace Guidelines</p>
+                    <p class="font-bold flex items-center"><i class="fa-solid fa-shield-halved mr-1.5 text-indigo-500"></i> Negotiation Rules</p>
                     <p class="text-indigo-700/90 leading-relaxed">
-                        Verify address conditions and specifications carefully before arranging final deal agreements or closing parameters with assigned workspace contributors.
+                        Accepting an offer automatically changes the task status to <span class="font-semibold text-indigo-900">confirmed</span> and declines alternative lower-priority bids.
                     </p>
                 </div>
 
@@ -123,140 +122,249 @@
         </div>
     </main>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
+    <div id="counter-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Submit Counter Offer</h3>
+            <p class="text-xs text-gray-500 mb-4">Propose an adjusted balance rate to worker <span id="modal-worker-name" class="font-semibold text-gray-800">--</span>.</p>
             
-            // 1. Read URL Parameters (?id=X)
-            const urlParams = new URLSearchParams(window.location.search);
-            const taskId = urlParams.get('id');
+            <input type="hidden" id="modal-offer-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Your Price ($)</label>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-400 sm:text-sm">$</span>
+                        </div>
+                        <input type="number" id="counter-price-input" class="block w-full pl-7 pr-3 py-2.5 border border-gray-200 rounded-xl text-base focus:outline-indigo-600 font-bold" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="closeCounterModal()" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl text-sm hover:bg-gray-50 transition">Cancel</button>
+                    <button onclick="submitCounterAction()" class="flex-1 py-2.5 bg-indigo-600 text-white font-medium rounded-xl text-sm hover:bg-indigo-700 shadow-sm transition">Send Counter</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            // Defensive check: if no ID parameter is attached to the link, block processing and show error
-            if (!taskId) {
-                showError("No Task ID was specified in the URL address bar link. Please go back and select a task.");
+    <script>
+        // Global variables to track the state context
+        let currentTaskId = null;
+        const token = localStorage.getItem("token");
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentTaskId = urlParams.get('id');
+
+            if (!currentTaskId) {
+                showError("No Task ID specified in the URL link parameter.");
                 return;
             }
 
-            // Target API URL matching your backend setup
-            const API_URL = `http://localhost:5000/api/tasks/${taskId}`;
+            // Fire core endpoints loaders
+            loadSingleTaskDetails();
+            loadAssociatedOffers();
+        });
 
-            async function loadSingleTaskDetails() {
-                try {
-                    const token = localStorage.getItem("token");
+        // 1. Fetch Task Detail Info
+        async function loadSingleTaskDetails() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/tasks/${currentTaskId}`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
 
-                    const response = await fetch(API_URL, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}` // Satisfies your 'protect' middleware gate
-                        }
-                    });
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                const data = await response.json();
+                if (data.success) populateTaskDetails(data.task);
 
-                    if (response.status === 401) {
-                        showError("Session unauthorized or authentication token missing. Please log in again.");
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP Endpoint reported status parameter code: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    if (data.success && data.task) {
-                        populateTaskDetails(data.task);
-                    } else {
-                        showError("The system returned a successful channel, but could not interpret task array schemas.");
-                    }
-
-                } catch (error) {
-                    console.error("Runtime Fetch Exception Block:", error);
-                    showError(`Unable to bridge pipeline securely to API node: ${error.message}`);
-                }
+            } catch (error) {
+                showError(`Failed connecting to core data node: ${error.message}`);
             }
+        }
 
-            // 2. Inject Database Columns into DOM Nodes
-            function populateTaskDetails(task) {
-                // Nav elements and headings
-                document.getElementById("nav-task-id").innerText = `Task Reference ID: #${task.id}`;
-                document.getElementById("task-header-title").innerText = `Task Summary Block #${task.id}`;
-                document.getElementById("task-category").innerText = task.category_name || "General Structural";
-                document.getElementById("task-price").innerText = `$${parseFloat(task.initial_price || 0).toFixed(2)}`;
-                document.getElementById("task-description").innerText = task.description;
-                
-                // Location & Contacts
-                document.getElementById("location-text").innerText = task.location_text;
-                document.getElementById("client-name").innerText = task.customer_name || "Anonymous User Name";
-                document.getElementById("client-meta-id").innerText = `Owner ID Reference: #${task.customer_id}`;
-                
-                // Longitude Latitude displays
-                document.getElementById("coord-lat").innerText = parseFloat(task.latitude || 0).toFixed(6);
-                document.getElementById("coord-lng").innerText = parseFloat(task.longitude || 0).toFixed(6);
+        function populateTaskDetails(task) {
+            document.getElementById("nav-task-id").innerText = `Task Reference ID: #${task.id}`;
+            document.getElementById("task-header-title").innerText = `Task Summary Block #${task.id}`;
+            document.getElementById("task-category").innerText = task.category_name || "General Structural";
+            document.getElementById("task-price").innerText = `$${parseFloat(task.initial_price || 0).toFixed(2)}`;
+            document.getElementById("task-description").innerText = task.description;
+            document.getElementById("location-text").innerText = task.location_text;
+            document.getElementById("coord-lat").innerText = parseFloat(task.latitude || 0).toFixed(6);
+            document.getElementById("coord-lng").innerText = parseFloat(task.longitude || 0).toFixed(6);
 
-                // Phone anchor linking structure
-                document.getElementById("client-call-btn").setAttribute("href", `tel:${task.customer_mobile}`);
+            const timestampDate = new Date(task.created_at);
+            document.getElementById("task-timestamp").innerText = `${timestampDate.toLocaleDateString()} at ${timestampDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
-                // Simple letter initials icon constructor
-                if (task.customer_name) {
-                    document.getElementById("client-avatar").innerText = task.customer_name.charAt(0).toUpperCase();
-                }
+            const statusBadge = document.getElementById("task-status-badge");
+            statusBadge.innerText = task.status;
+            
+            // Map renderer engine blocks
+            renderIframeMap(parseFloat(task.latitude), parseFloat(task.longitude));
+        }
 
-                // Dynamic Date conversion system
-                const timestampDate = new Date(task.created_at);
-                document.getElementById("task-timestamp").innerText = `${timestampDate.toLocaleDateString()} at ${timestampDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        // 2. Fetch Active Offers for this specific Task ID
+        async function loadAssociatedOffers() {
+            const offersList = document.getElementById("offers-list");
+            const countLabel = document.getElementById("offers-count");
 
-                // Status tag design layout router updates
-                const statusBadge = document.getElementById("task-status-badge");
-                statusBadge.innerText = task.status;
-                if (task.status === "open") {
-                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wider";
-                } else if (task.status === "negotiating") {
-                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wider animate-pulse";
-                } else if (task.status === "completed") {
-                    statusBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider";
-                }
+            try {
+                // Pointing to your sub-resource offers endpoint
+                const response = await fetch(`http://localhost:5000/api/tasks/${currentTaskId}/offers`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
 
-                // 3. Dynamic Map Rendering Frame Logic Engine (OpenStreetMap)
-                const lat = parseFloat(task.latitude);
-                const lng = parseFloat(task.longitude);
+                if (!response.ok) throw new Error("Offers unavailable");
+                const data = await response.json();
 
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    const viewDelta = 0.008; // Adjust focus zoom diameter radius
-                    const minLng = (lng - viewDelta).toFixed(4);
-                    const minLat = (lat - viewDelta).toFixed(4);
-                    const maxLng = (lng + viewDelta).toFixed(4);
-                    const maxLat = (lat + viewDelta).toFixed(4);
+                if (data.success && data.offers && data.offers.length > 0) {
+                    countLabel.innerText = `${data.offers.length} Active`;
+                    offersList.innerHTML = "";
 
-                    document.getElementById("map-iframe-wrapper").innerHTML = `
-                        <iframe 
-                            width="100%" 
-                            height="100%" 
-                            frameborder="0" 
-                            scrolling="no" 
-                            src="https://www.openstreetmap.org/export/embed.html?bbox=${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}&amp;layer=mapnik&amp;marker=${lat}%2C${lng}"
-                            class="grayscale hover:grayscale-0 transition-all duration-300">
-                        </iframe>
-                    `;
+                    data.offers.forEach(offer => {
+                        const offerRow = document.createElement("div");
+                        offerRow.className = "p-4 rounded-xl border border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4";
+                        
+                        // Handle action visibility conditional flags based on pending status rows
+                        const isPending = offer.status === 'pending';
+
+                        offerRow.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                <div class="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center">
+                                    ${(offer.worker_name || 'W').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">${offer.worker_name || 'Verified Contractor'}</p>
+                                    <p class="text-xs text-gray-400">Status: <span class="capitalize font-semibold text-indigo-600">${offer.status}</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0">
+                                <div class="text-left sm:text-right">
+                                    <span class="text-[10px] text-gray-400 block font-bold uppercase">Proposed rate</span>
+                                    <span class="text-xl font-black text-emerald-600">$${parseFloat(offer.offer_price).toFixed(2)}</span>
+                                </div>
+                                ${isPending ? `
+                                <div class="flex gap-1.5">
+                                    <button onclick="processOfferAction(${offer.id}, 'accepted')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition">Accept</button>
+                                    <button onclick="openCounterModal(${offer.id}, '${offer.worker_name || 'Worker'}')" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold text-xs rounded-lg transition">Counter</button>
+                                    <button onclick="processOfferAction(${offer.id}, 'rejected')" class="px-1.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition" title="Reject"><i class="fa-solid fa-trash-can px-1"></i></button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                        offersList.appendChild(offerRow);
+                    });
                 } else {
-                    document.getElementById("map-iframe-wrapper").innerHTML = `
-                        <div class="h-full w-full flex flex-col items-center justify-center text-xs text-gray-400">
-                            <i class="fa-solid fa-map-location text-lg mb-1 text-gray-300"></i> No geographical coordinates recorded.
+                    countLabel.innerText = "0 Active";
+                    offersList.innerHTML = `
+                        <div class="text-center py-8 text-gray-400 text-xs">
+                            <i class="fa-solid fa-handshake-slash text-xl block mb-2 text-gray-300"></i> No incoming offers found for this task yet.
                         </div>
                     `;
                 }
+            } catch (error) {
+                console.error(error);
+                offersList.innerHTML = `<div class="text-xs text-rose-600 py-2">Failed to process incoming offer arrays.</div>`;
+            }
+        }
+
+        // 3. Process Accept or Reject Decisions
+        async function processOfferAction(offerId, actionType) {
+            if (!confirm(`Are you sure you want to mark this offer as ${actionType}?`)) return;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/offers/${offerId}/status`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: actionType })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(`Offer successfully ${actionType}!`);
+                    // Reload data states to reflect changes dynamically
+                    loadSingleTaskDetails();
+                    loadAssociatedOffers();
+                } else {
+                    showError(data.message || "Failed modifying execution state updates.");
+                }
+            } catch (error) {
+                showError("Error forwarding decision configuration options.");
+            }
+        }
+
+        // 4. Modal Window Interactivity logic
+        function openCounterModal(offerId, workerName) {
+            document.getElementById("modal-offer-id").value = offerId;
+            document.getElementById("modal-worker-name").innerText = workerName;
+            document.getElementById("counter-price-input").value = "";
+            document.getElementById("counter-modal").classList.remove("hidden");
+        }
+
+        function closeCounterModal() {
+            document.getElementById("counter-modal").classList.add("hidden");
+        }
+
+        async function submitCounterAction() {
+            const offerId = document.getElementById("modal-offer-id").value;
+            const price = document.getElementById("counter-price-input").value;
+
+            if (!price || parseFloat(price) <= 0) {
+                alert("Please enter a valid counter-offer price.");
+                return;
             }
 
-            // Error Render Helper Function
-            function showError(message) {
-                const container = document.getElementById("error-container");
-                const text = document.getElementById("error-message");
-                container.classList.remove("hidden");
-                text.innerText = message;
-                document.getElementById("main-content").classList.add("opacity-30", "pointer-events-none");
-            }
+            try {
+                const response = await fetch(`http://localhost:5000/api/offers/${offerId}/counter`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ counter_price: parseFloat(price) })
+                });
 
-            // Run execution logic loops
-            loadSingleTaskDetails();
-        });
+                const data = await response.json();
+                if (data.success) {
+                    closeCounterModal();
+                    showSuccess("Counter offer transmitted successfully!");
+                    loadAssociatedOffers();
+                } else {
+                    alert(data.message || "Could not transmit alternative counter.");
+                }
+            } catch (error) {
+                alert("Error sending counter-offer payload.");
+            }
+        }
+
+        // Helper Map and Feedback logic
+        function renderIframeMap(lat, lng) {
+            if (isNaN(lat) || isNaN(lng)) return;
+            const delta = 0.008;
+            document.getElementById("map-iframe-wrapper").innerHTML = `
+                <iframe width="100%" height="100%" frameborder="0" scrolling="no" 
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=${(lng - delta).toFixed(4)}%2C${(lat - delta).toFixed(4)}%2C${(lng + delta).toFixed(4)}%2C${(lat + delta).toFixed(4)}&amp;layer=mapnik&amp;marker=${lat}%2C${lng}"
+                    class="grayscale hover:grayscale-0 transition-all duration-300">
+                </iframe>`;
+        }
+
+        function showSuccess(message) {
+            const container = document.getElementById("success-container");
+            container.classList.remove("hidden");
+            document.getElementById("success-message").innerText = message;
+            setTimeout(() => container.classList.add("hidden"), 4000);
+        }
+
+        function showError(message) {
+            const container = document.getElementById("error-container");
+            container.classList.remove("hidden");
+            document.getElementById("error-message").innerText = message;
+        }
     </script>
 </body>
 </html>
