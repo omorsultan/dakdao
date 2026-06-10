@@ -1,8 +1,7 @@
-// controllers/auth.controller.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
-
+const { logActivity } = require("../utils/logger"); // Import logging utility
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -42,9 +41,16 @@ exports.register = async (req, res) => {
             ]
         );
 
+        const newUserId = result.insertId;
+
+        // 📝 LOG ACTIVITY: User Account Created
+        // We artificially inject req.user here because the middleware hasn't run yet
+        req.user = { id: newUserId };
+        await logActivity(req, `Account registered successfully as role: ${role || "customer"}`, "users", newUserId);
+
         res.status(201).json({
             success: true,
-            userId: result.insertId
+            userId: newUserId
         });
 
     } catch (error) {
@@ -54,12 +60,9 @@ exports.register = async (req, res) => {
     }
 };
 
-
-
 // LOGIN
 exports.login = async (req, res) => {
     try {
-
         const { mobile, password } = req.body;
 
         const [users] = await pool.query(
@@ -74,11 +77,7 @@ exports.login = async (req, res) => {
         }
 
         const user = users[0];
-
-        const isMatch = await bcrypt.compare(
-            password,
-            user.password
-        );
+        const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
             return res.status(401).json({
@@ -87,15 +86,14 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            {
-                id: user.id,
-                role: user.role
-            },
+            { id: user.id, role: user.role },
             process.env.JWT_SECRET,
-            {
-                expiresIn: process.env.JWT_EXPIRES_IN
-            }
+            { expiresIn: process.env.JWT_EXPIRES_IN }
         );
+
+        // 📝 LOG ACTIVITY: Secure Session Login
+        req.user = { id: user.id };
+        await logActivity(req, "User authenticated via password login securely", "users", user.id);
 
         res.json({
             success: true,

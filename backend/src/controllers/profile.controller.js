@@ -1,6 +1,5 @@
-// backend/controllers/profile.controller.js
 const pool = require("../config/db");
-
+const { logActivity } = require("../utils/logger");
 
 // UPSERT WORKER PROFILE
 exports.createWorkerProfile = async (req, res) => {
@@ -17,7 +16,6 @@ exports.createWorkerProfile = async (req, res) => {
 
         const profileImage = req.file ? req.file.filename : null;
 
-        // Check if profile already exists for this user
         const [existing] = await pool.query(
             "SELECT id FROM worker_profile WHERE user_id = ?",
             [req.user.id]
@@ -43,6 +41,9 @@ exports.createWorkerProfile = async (req, res) => {
                     : [full_name, mobile, nid_number, permanent_location || null, skills || null, latitude || null, longitude || null, req.user.id]
             );
 
+            // 📝 LOG ACTIVITY: Profile Data Overhaul
+            await logActivity(req, "Updated structural worker profile parameters and metadata", "worker_profile", existing[0].id);
+
             return res.json({
                 success: true,
                 message: "Worker profile updated"
@@ -50,7 +51,7 @@ exports.createWorkerProfile = async (req, res) => {
         }
 
         // INSERT
-        await pool.query(
+        const [result] = await pool.query(
             `
             INSERT INTO worker_profile
             (user_id, full_name, mobile, nid_number, profile_image, permanent_location, skills, latitude, longitude)
@@ -69,6 +70,9 @@ exports.createWorkerProfile = async (req, res) => {
             ]
         );
 
+        // 📝 LOG ACTIVITY: Profile Record Provisioning
+        await logActivity(req, "Initialized worker registration profile metadata tracking", "worker_profile", result.insertId);
+
         res.status(201).json({
             success: true,
             message: "Worker profile created"
@@ -78,7 +82,6 @@ exports.createWorkerProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // UPSERT CUSTOMER PROFILE
 exports.createCustomerProfile = async (req, res) => {
@@ -94,7 +97,6 @@ exports.createCustomerProfile = async (req, res) => {
 
         const profileImage = req.file ? req.file.filename : null;
 
-        // Check if profile already exists for this user
         const [existing] = await pool.query(
             "SELECT id FROM customer_profile WHERE user_id = ?",
             [req.user.id]
@@ -119,6 +121,9 @@ exports.createCustomerProfile = async (req, res) => {
                     : [full_name, mobile, nid_number || null, permanent_location || null, latitude || null, longitude || null, req.user.id]
             );
 
+            // 📝 LOG ACTIVITY: Profile Modifications Trace
+            await logActivity(req, "Updated administrative customer identity parameters", "customer_profile", existing[0].id);
+
             return res.json({
                 success: true,
                 message: "Customer profile updated"
@@ -126,7 +131,7 @@ exports.createCustomerProfile = async (req, res) => {
         }
 
         // INSERT
-        await pool.query(
+        const [result] = await pool.query(
             `
             INSERT INTO customer_profile
             (user_id, full_name, mobile, nid_number, profile_image, permanent_location, latitude, longitude)
@@ -144,6 +149,9 @@ exports.createCustomerProfile = async (req, res) => {
             ]
         );
 
+        // 📝 LOG ACTIVITY: Profile Created
+        await logActivity(req, "Generated baseline verification profile for consumer actions", "customer_profile", result.insertId);
+
         res.status(201).json({
             success: true,
             message: "Customer profile created"
@@ -153,9 +161,8 @@ exports.createCustomerProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-// const pool = require("../config/db");
 
-// GET profile
+// GET profile (Read-only)
 exports.getProfile = async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -170,7 +177,7 @@ exports.getProfile = async (req, res) => {
     }
 };
 
-// UPDATE profile
+// UPDATE profile (Base User Table)
 exports.updateProfile = async (req, res) => {
     try {
         const { name, email, address } = req.body;
@@ -184,7 +191,9 @@ exports.updateProfile = async (req, res) => {
             [name.trim(), email?.trim() || null, address?.trim() || null, req.user.id]
         );
 
-        // Return updated user
+        // 📝 LOG ACTIVITY: Base Account Modification Track
+        await logActivity(req, "Altered core credential account parameters (Name/Email/Address)", "users", req.user.id);
+
         const [rows] = await pool.query(
             `SELECT id, name, mobile, role, email, address, avatar_url, created_at
              FROM users WHERE id = ?`,
@@ -196,6 +205,8 @@ exports.updateProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// getCustomerProfile (Read-only)
 exports.getCustomerProfile = async (req, res) => {
     try {
         const [rows] = await pool.query(
