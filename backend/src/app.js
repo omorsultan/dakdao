@@ -10,6 +10,7 @@ const profileRoutes = require("./routes/profile.routes");
 const taskRoutes = require("./routes/task.routes");
 const offerRoutes = require("./routes/offer.routes");
 const messageRoutes = require("./routes/message.routes");
+const workerRoutes = require("./routes/worker.routes"); 
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api", taskRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", offerRoutes);
 app.use("/api", messageRoutes);
+app.use("/api", workerRoutes);
 
 
 app.get("/", (req, res) => {
