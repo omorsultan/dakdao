@@ -288,6 +288,32 @@
             gap: 7px;
             flex-wrap: wrap;
         }
+        .btn-chat {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #0284c7; /* Sky blue/messenger tone */
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%; /* Matches full width action layouts if stacked */
+            margin-bottom: 8px; /* Safe spacing inside action stacks */
+        }
+
+        .btn-chat:hover {
+            background: #0369a1;
+        }
+
+        .btn-chat svg {
+            width: 18px;
+            height: 18px;
+        }
 
         .quick-btn {
             font-family: 'DM Mono', monospace;
@@ -760,7 +786,12 @@
                     <div class="neg-by" id="negLastBy">–</div>
                 </div>
 
-                <div class="neg-actions" id="negActions">
+               <div class="neg-actions" id="negActions">
+                    <button class="btn-chat" id="goToChatBtn" onclick="goToChat()">
+                        <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Open Chat Hub
+                    </button>
+
                     <button class="btn-accept" id="acceptNegBtn" onclick="acceptNegotiation()">
                         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                         Accept this price
@@ -887,6 +918,32 @@
         document.getElementById("offerPrice").focus();
     }
 
+    async function loadOfferDetails() {
+    try {
+        const response = await fetch(`${API}/api/offers/my`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Find if there is a pending offer for this specific task
+            const activeOffer = data.offers.find(o => o.task_id == taskId && o.status === 'pending');
+            
+            if (activeOffer) {
+                // 1. Populate your existing UI text fields...
+                document.getElementById("negCurrentPrice").textContent = `৳ ${activeOffer.offer_price}`;
+                
+                // 2. CRITICAL: Trigger the UI state handler to unhide the chat button
+                checkOfferUIState(true); 
+            } else {
+                checkOfferUIState(false);
+            }
+        }
+    } catch (error) {
+        console.error("UI Synchronization failed:", error);
+    }
+}
+
     // ── Load worker's existing offer on this task ─────────────────
     async function loadMyOffer() {
         try {
@@ -908,6 +965,52 @@
 
         } catch { /* ignore */ }
     }
+            // 1. Navigation Redirect Linker
+        function goToChat() {
+            // 1. Try to get '?id=' from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let taskId = urlParams.get("id");
+
+            // 2. Fallback: Try to get '?task_id=' from URL if 'id' wasn't used
+            if (!taskId) {
+                taskId = urlParams.get("task_id");
+            }
+
+            // 3. Fallback: If you have a global object/variable tracking the loaded task
+            if (!taskId && typeof currentTask !== 'undefined' && currentTask.id) {
+                taskId = currentTask.id;
+            }
+            if (!taskId && typeof task !== 'undefined' && task.id) {
+                taskId = task.id;
+            }
+
+            // Redirect if found, otherwise throw custom debug alert
+            if (taskId) {
+                window.location.href = `chat.html?id=${taskId}`;
+            } else {
+                // This alert will now tell you exactly what query parameters actually exist in your URL bar right now
+                alert(`Debug Error: Could not find task ID. Your current URL query string is: ${window.location.search}`);
+            }
+        }
+
+        // 2. Logic Handler Integration Hook
+        // Call this line inside your existing offer state engine check (where you show/hide the negotiation panel)
+        function checkOfferUIState(hasActiveOffer) {
+            const chatBtn = document.getElementById("goToChatBtn");
+            
+            if (hasActiveOffer) {
+                document.getElementById("offerCard").style.display = "none";
+                document.getElementById("negotiationPanel").style.display = "block";
+                
+                // Unhide chat access window
+                chatBtn.style.display = "inline-flex"; 
+            } else {
+                document.getElementById("offerCard").style.display = "block";
+                document.getElementById("negotiationPanel").style.display = "none";
+                
+                chatBtn.style.display = "none";
+            }
+        }
 
     // ── Show negotiation panel ────────────────────────────────────
     function showNegotiationPanel(offer) {

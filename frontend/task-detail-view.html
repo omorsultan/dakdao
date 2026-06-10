@@ -97,6 +97,33 @@
                         <p id="location-text" class="text-base font-bold capitalize leading-tight">--</p>
                     </div>
 
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 tracking-widest">Service Location Pin</h3>
+    
+    <div class="flex items-start space-x-2 text-gray-800 mb-4">
+        <i class="fa-solid fa-location-dot text-rose-500 text-lg mt-0.5 flex-shrink-0"></i>
+        <p id="location-text" class="text-base font-bold capitalize leading-tight">--</p>
+    </div>
+
+    <div id="map-iframe-wrapper" class="w-full h-52 bg-gray-100 border border-gray-200 rounded-xl overflow-hidden shadow-inner relative group mb-4"></div>
+
+    <div class="grid grid-cols-2 gap-2 text-center mb-4">
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+            <span class="block text-[10px] uppercase font-bold text-gray-400">Latitude</span>
+            <span id="coord-lat" class="font-mono font-bold text-xs text-gray-700">--</span>
+        </div>
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+            <span class="block text-[10px] uppercase font-bold text-gray-400">Longitude</span>
+            <span id="coord-lng" class="font-mono font-bold text-xs text-gray-700">--</span>
+        </div>
+    </div>
+
+    <button onclick="goToCustomerChat()" class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center space-x-2 shadow-sm">
+        <i class="fa-solid fa-comments text-base"></i>
+        <span>Open Chat Hub Room</span>
+    </button>
+</div>
+
                     <div id="map-iframe-wrapper" class="w-full h-52 bg-gray-100 border border-gray-200 rounded-xl overflow-hidden shadow-inner relative group mb-4"></div>
 
                     <div class="grid grid-cols-2 gap-2 text-center">
@@ -352,6 +379,27 @@
                     class="grayscale hover:grayscale-0 transition-all duration-300">
                 </iframe>`;
         }
+
+        function goToCustomerChat() {
+    // 1. Extract the taskId context out of the current address link string
+    const urlParams = new URLSearchParams(window.location.search);
+    let taskId = urlParams.get("id") || urlParams.get("task_id");
+
+    // 2. Fallback: Try reading native text labels on the page if the URL parameter parser is empty
+    if (!taskId) {
+        const navLabelText = document.getElementById("nav-task-id")?.textContent;
+        // Extracts digits if it contains text like "Task #4"
+        const match = navLabelText ? navLabelText.match(/\d+/) : null; 
+        if (match) taskId = match[0];
+    }
+
+    // Redirect to your dynamic message script window
+    if (taskId) {
+        window.location.href = `chat.html?id=${taskId}`;
+    } else {
+        alert("Configuration Error: Failed to resolve target Task Identity mapping on page initialization.");
+    }
+}
 
         function showSuccess(message) {
             const container = document.getElementById("success-container");

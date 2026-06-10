@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Chat Room — DakDao</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-main: #f1f5f9;
+            --bg-chat: #ffffff;
+            --bubble-me: #d9fdd3;
+            --bubble-them: #f0f2f5;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Chat Container Framework */
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            background: var(--bg-chat);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Chat Room Header */
+        .chat-header {
+            padding: 16px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .chat-title-info h3 {
+            font-size: 16px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .chat-title-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Message Stream Body */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            background: #efeae2; /* Classic WhatsApp style neutral background wallpaper tint */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Message Bubbles layout rules */
+        .message-row {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+            width: fit-content;
+        }
+
+        .message-row.me {
+            margin-left: auto;
+            align-items: flex-end;
+        }
+
+        .message-row.them {
+            margin-right: auto;
+            align-items: flex-start;
+        }
+
+        .sender-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+            padding: 0 4px;
+        }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.4;
+            color: var(--text-dark);
+            word-break: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .me .message-bubble {
+            background: var(--bubble-me);
+            border-top-right-radius: 2px;
+        }
+
+        .them .message-bubble {
+            background: var(--bubble-them);
+            border-top-left-radius: 2px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #747f8a;
+            margin-top: 4px;
+            align-self: flex-end;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            margin: auto;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Input Form Bar Footer */
+        .chat-footer {
+            padding: 12px 16px;
+            background: #f0f2f5;
+            border-top: 1px solid var(--border);
+        }
+
+        .message-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid transparent;
+            border-radius: 24px;
+            font-size: 15px;
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            border-color: #cbd5e1;
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transform: rotate(45deg);
+            margin-left: -2px;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <header class="chat-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <div class="chat-title-info">
+                <h3 id="taskDescription">Loading Task Context...</h3>
+                <p id="chatSubtext">Secure Deal Negotiation Hub</p>
+            </div>
+        </header>
+
+        <main class="chat-messages" id="chatBox">
+            <div class="empty-state">Establishing connection security...</div>
+        </main>
+
+        <footer class="chat-footer">
+            <form class="message-form" id="chatForm">
+                <input type="text" id="msgInput" class="message-input" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" class="send-btn">
+                    <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <script>
+        // ── CONFIG AND STATE GLOBALS ──────────────────────────────────────
+        const API = "http://localhost:5000"; 
+        const token = localStorage.getItem("token") || ""; // Pull current user JWT from storage
+        
+        // Dynamic URL parser (Extracts ?id=4 from your file navigation rules)
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get("id") || null;
+
+        const chatBox = document.getElementById("chatBox");
+        const chatForm = document.getElementById("chatForm");
+        const msgInput = document.getElementById("msgInput");
+
+        // Simple runtime configuration verify escape block
+        if (!taskId || !token) {
+            alert("Security Violation: Missing target context identity or auth tokens.");
+            window.location.href = "dashboard.html";
+        }
+
+        // ── FETCH AND RENDER ENGINE ──────────────────────────────────────
+        
+        // Pull details of the task to update the header title
+        async function loadTaskHeader() {
+            try {
+                const res = await fetch(`${API}/api/tasks/${taskId}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById("taskDescription").textContent = data.task.description.slice(0, 40) + (data.task.description.length > 40 ? "..." : "");
+                    document.getElementById("chatSubtext").textContent = `Customer: ${data.task.customer_name} · Value Context: ৳${data.task.final_display_price}`;
+                }
+            } catch (e) { console.error("Could not fetch header task state metrics", e); }
+        }
+
+        // Fetch messages and render inside chatbox
+        async function loadMessages() {
+            try {
+                const res = await fetch(`${API}/api/messages/task/${taskId}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (!data.success) throw new Error();
+
+                if (data.messages.length === 0) {
+                    chatBox.innerHTML = `<div class="empty-state">No messages here yet. Break the ice by typing below!</div>`;
+                    return;
+                }
+
+                // Decode token to safely find who "I" am (so we can style own messages 'me' vs 'them')
+                const currentUserId = JSON.parse(atob(token.split('.')[1])).id;
+
+                chatBox.innerHTML = data.messages.map(msg => {
+                    const isMe = msg.sender_id === currentUserId;
+                    const dateFormatted = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    return `
+                        <div class="message-row ${isMe ? 'me' : 'them'}">
+                            ${!isMe ? `<span class="sender-tag">${escapeHTML(msg.sender_name)} (${msg.sender_role})</span>` : ''}
+                            <div class="message-bubble">
+                                ${escapeHTML(msg.message)}
+                            </div>
+                            <span class="message-time">${dateFormatted}</span>
+                        </div>
+                    `;
+                }).join("");
+
+                scrollToBottom();
+
+            } catch (e) {
+                chatBox.innerHTML = `<div class="empty-state" style="color:red;">Error fetching conversation parameters from server.</div>`;
+            }
+        }
+
+        // ── SEND MESSAGE EVENT INTERACTION ────────────────────────────────
+        chatForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const messageText = msgInput.value.trim();
+            if (!messageText) return;
+
+            try {
+                const res = await fetch(`${API}/api/messages`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ task_id: taskId, message: messageText })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    msgInput.value = ""; // Clear input immediately
+                    await loadMessages(); // Refresh message list to show your message
+                } else {
+                    alert(data.message || "Failed to send message");
+                }
+            } catch (err) {
+                console.error("Message injection failed:", err);
+            }
+        });
+
+        // ── UTILITIES AND INITIALIZATIONS ────────────────────────────────
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Boot and set interval polling (checks for new messages every 3 seconds)
+        loadTaskHeader();
+        loadMessages();
+        setInterval(loadMessages, 3000); 
+
+    </script>
+</body>
+</html>
