@@ -3,422 +3,835 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Offers — Dakdao</title>
+    <title>Send Offer — Dakdao</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #0e0f0c; --surface: #161713; --card: #1c1e19; --card-hover: #222420;
-            --border: #2a2c27; --border-light: #333530;
-            --text: #e8e6df; --muted: #7a7870; --subtle: #454540;
-            --accent: #c8f060; --accent-dim: rgba(200,240,96,0.12);
-            --red: #f06060; --red-dim: rgba(240,96,96,0.12);
-            --blue: #60b4f0; --blue-dim: rgba(96,180,240,0.12);
-            --amber: #f0c060; --amber-dim: rgba(240,192,96,0.12);
-            --green: #60d090; --green-dim: rgba(96,208,144,0.12);
+            --bg: #0e0f0c;
+            --surface: #161713;
+            --card: #1c1e19;
+            --card-hover: #222420;
+            --border: #2a2c27;
+            --border-light: #333530;
+            --text: #e8e6df;
+            --muted: #7a7870;
+            --subtle: #454540;
+            --accent: #c8f060;
+            --accent-dim: rgba(200,240,96,0.12);
+            --accent-hover: #d4f57a;
+            --red: #f06060;
+            --red-dim: rgba(240,96,96,0.12);
+            --blue: #60b4f0;
+            --blue-dim: rgba(96,180,240,0.12);
+            --amber: #f0c060;
+            --amber-dim: rgba(240,192,96,0.12);
+            --green: #60f090;
+            --green-dim: rgba(96,240,144,0.12);
         }
 
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-        /* ── Layout ── */
-        .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
-
-        /* ── Sidebar ── */
-        .sidebar {
-            background: var(--surface); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 1.5rem 1rem;
-            position: sticky; top: 0; height: 100vh; overflow-y: auto;
-        }
-
-        .logo { display: flex; align-items: center; gap: 9px; padding: 0.25rem 0.5rem; margin-bottom: 2rem; }
-        .logo-mark { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .logo-mark svg { width: 15px; height: 15px; stroke: #0e0f0c; fill: none; stroke-width: 2.5; stroke-linecap: round; }
-        .logo-name { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
-
-        .nav-section { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtle); padding: 0 0.5rem; margin: 1.2rem 0 0.4rem; }
-
-        .nav-item {
-            display: flex; align-items: center; gap: 9px;
-            padding: 0.55rem 0.75rem; border-radius: 8px;
-            font-size: 0.85rem; font-weight: 500; color: var(--muted);
-            text-decoration: none; cursor: pointer; transition: all 0.15s;
-            border: none; background: none; width: 100%; font-family: 'DM Sans', sans-serif;
-        }
-        .nav-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
-        .nav-item:hover { background: var(--card); color: var(--text); }
-        .nav-item.active { background: var(--accent-dim); color: var(--accent); }
-        .nav-item .badge { margin-left: auto; font-size: 0.65rem; font-family: 'DM Mono', monospace; background: var(--accent-dim); color: var(--accent); padding: 0.15rem 0.45rem; border-radius: 20px; }
-
-        .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
-        .worker-chip { display: flex; align-items: center; gap: 9px; padding: 0.6rem 0.75rem; border-radius: 9px; background: var(--card); }
-        .worker-av-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim); border: 1.5px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: var(--accent); flex-shrink: 0; }
-        .worker-info .wname { font-size: 0.8rem; font-weight: 600; }
-        .worker-info .wrole { font-size: 0.68rem; color: var(--muted); }
-
-        /* ── Main ── */
-        .main { padding: 2rem 2rem 4rem; }
-
-        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
-        .page-title h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.03em; }
-        .page-title p { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
-
-        /* ── Summary stats ── */
-        .summary-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 1.75rem;
-        }
-
-        .sum-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem 1.1rem;
-        }
-
-        .sum-num {
-            font-family: 'DM Mono', monospace;
-            font-size: 1.6rem;
-            font-weight: 500;
-            letter-spacing: -0.03em;
-            line-height: 1;
-            margin-bottom: 0.3rem;
-        }
-
-        .sum-label { font-size: 0.72rem; color: var(--muted); }
-
-        /* ── Filter bar ── */
-        .filter-bar {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 1.25rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
+        body {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.78rem; font-weight: 500;
-            padding: 0.4rem 0.85rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--card);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem 4rem;
+        }
+
+        /* ── Top nav ── */
+        .topnav {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
             color: var(--muted);
-            cursor: pointer; transition: all 0.15s;
-            display: flex; align-items: center; gap: 6px;
-        }
-
-        .filter-btn .fc {
-            font-family: 'DM Mono', monospace; font-size: 0.65rem;
-            background: var(--surface); padding: 0.1rem 0.35rem;
-            border-radius: 8px;
-        }
-
-        .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-        .filter-btn.active .fc { background: rgba(200,240,96,0.15); }
-
-        /* ── Offers list ── */
-        .offers-list { display: flex; flex-direction: column; gap: 10px; }
-
-        /* ── Offer row card ── */
-        .offer-row-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-            transition: border-color 0.15s;
+            border-radius: 8px;
+            padding: 0.45rem 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.15s;
         }
 
-        .offer-row-card:hover { border-color: var(--border-light); }
-        .offer-row-card.accepted { border-color: rgba(96,208,144,0.35); }
-        .offer-row-card.rejected { opacity: 0.55; }
-
-        .offer-row-top {
-            padding: 1rem 1.25rem;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1rem;
-            align-items: start;
+        .back-btn svg {
+            width: 13px; height: 13px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round;
         }
 
-        .offer-task-desc {
-            font-size: 0.88rem;
+        .back-btn:hover { border-color: var(--border-light); color: var(--text); }
+
+        .logo-mark {
+            width: 28px; height: 28px;
+            background: var(--accent);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        .logo-mark svg {
+            width: 14px; height: 14px;
+            stroke: #0e0f0c; fill: none;
+            stroke-width: 2.5; stroke-linecap: round;
+        }
+
+        /* ── Page wrapper ── */
+        .page {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ── Task card ── */
+        .task-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .task-card-label {
+            font-size: 0.65rem;
             font-weight: 500;
-            line-height: 1.4;
-            margin-bottom: 0.45rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--subtle);
+            margin-bottom: 0.5rem;
         }
 
-        .offer-task-meta {
-            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        .task-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
         }
 
-        .meta-chip {
-            display: flex; align-items: center; gap: 4px;
-            font-size: 0.72rem; color: var(--muted);
+        .task-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .meta-chip svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+        .task-meta-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+        }
 
-        .offer-right {
-            text-align: right;
+        .task-meta-chip svg {
+            width: 11px; height: 11px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
             flex-shrink: 0;
         }
 
-        .offer-amount {
-            font-family: 'DM Mono', monospace;
-            font-size: 1.2rem; font-weight: 500;
-            letter-spacing: -0.02em;
-            margin-bottom: 4px;
-        }
-
-        .offer-amount.accepted { color: var(--green); }
-        .offer-amount.pending  { color: var(--amber); }
-        .offer-amount.rejected { color: var(--muted); }
-
-        .status-pill {
-            display: inline-block;
-            font-size: 0.65rem; font-weight: 500;
-            font-family: 'DM Mono', monospace;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-        }
-
-        .status-pill.pending  { background: var(--amber-dim); color: var(--amber); }
-        .status-pill.accepted { background: var(--green-dim); color: var(--green); }
-        .status-pill.rejected { background: var(--red-dim);   color: var(--red);   }
-
-        .offer-row-footer {
+        .task-listed-price {
+            margin-top: 1rem;
+            padding-top: 1rem;
             border-top: 1px solid var(--border);
-            padding: 0.65rem 1.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0,0,0,0.15);
         }
 
-        .offer-type-tag {
-            font-size: 0.7rem;
+        .task-listed-price span:first-child {
+            font-size: 0.75rem;
             color: var(--muted);
-            display: flex; align-items: center; gap: 5px;
         }
 
-        .offer-type-tag svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+        .task-listed-price span:last-child {
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
 
-        .withdraw-btn {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.72rem; font-weight: 500;
-            padding: 0.3rem 0.7rem;
-            background: none;
+        /* ── Loading skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── Offer form card ── */
+        .offer-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .offer-card-head {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .offer-card-head h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .pill {
+            font-size: 0.68rem;
+            font-weight: 500;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .pill.blue   { background: var(--blue-dim);  color: var(--blue); }
+        .pill.amber  { background: var(--amber-dim); color: var(--amber); }
+        .pill.green  { background: var(--accent-dim); color: var(--accent); }
+
+        .offer-card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* ── Price input ── */
+        .price-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-hint {
+            font-size: 0.68rem;
+            color: var(--subtle);
+        }
+
+        .price-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .price-currency {
+            position: absolute;
+            left: 1rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--accent);
+            pointer-events: none;
+        }
+
+        .price-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem 1rem 0.85rem 2.5rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+            -moz-appearance: textfield;
+        }
+
+        .price-input::-webkit-inner-spin-button,
+        .price-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+        .price-input:focus { border-color: var(--accent); }
+
+        .price-input::placeholder { color: var(--subtle); font-size: 1rem; }
+
+        /* Quick price buttons */
+        .quick-prices {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+        .btn-chat {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #0284c7; /* Sky blue/messenger tone */
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%; /* Matches full width action layouts if stacked */
+            margin-bottom: 8px; /* Safe spacing inside action stacks */
+        }
+
+        .btn-chat:hover {
+            background: #0369a1;
+        }
+
+        .btn-chat svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .quick-btn {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            padding: 0.3rem 0.65rem;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--muted);
-            cursor: pointer; transition: all 0.15s;
+            cursor: pointer;
+            transition: all 0.15s;
         }
 
-        .withdraw-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
-
-        .accepted-banner {
-            display: flex; align-items: center; gap: 7px;
-            font-size: 0.75rem; color: var(--green); font-weight: 500;
+        .quick-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
         }
 
-        .accepted-banner svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+        /* ── Note textarea ── */
+        .note-textarea {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.83rem;
+            color: var(--text);
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.15s;
+        }
 
-        /* ── Empty & skeleton ── */
-        .empty-state {
+        .note-textarea:focus { border-color: var(--accent); }
+
+        .note-textarea::placeholder { color: var(--subtle); }
+
+        /* ── Actions ── */
+        .action-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0.8rem 1rem;
+            background: var(--accent);
+            color: #0e0f0c;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-primary svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2.2; stroke-linecap: round;
+        }
+
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0.8rem 1.1rem;
+            background: var(--surface);
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-secondary:hover { border-color: var(--border-light); color: var(--text); }
+
+        /* ── Negotiation panel (shown when offer exists) ── */
+        .negotiation-panel {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 3rem 2rem;
-            text-align: center;
+            border-radius: 16px;
+            overflow: hidden;
+            display: none;
         }
 
-        .empty-state svg { width: 36px; height: 36px; stroke: var(--subtle); fill: none; stroke-width: 1.5; stroke-linecap: round; margin-bottom: 0.75rem; }
-        .empty-state h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
-        .empty-state p { font-size: 0.8rem; color: var(--muted); }
+        .negotiation-panel.visible { display: block; }
 
-        .skeleton { background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite; border-radius: 6px; }
-        @keyframes shimmer { to { background-position: -200% 0; } }
+        .negotiation-head {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .negotiation-head h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .negotiation-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .neg-price-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+
+        .neg-price-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .neg-price-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .neg-by {
+            font-size: 0.7rem;
+            color: var(--subtle);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .neg-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-accept {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0.8rem 1rem;
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1.5px solid rgba(96,240,144,0.25);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-accept svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2.2; stroke-linecap: round;
+        }
+
+        .btn-accept:hover {
+            background: var(--green);
+            color: #0e0f0c;
+        }
+
+        .btn-accept:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-counter {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0.8rem 1rem;
+            background: var(--surface);
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-counter svg {
+            width: 14px; height: 14px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round;
+        }
+
+        .btn-counter:hover { border-color: var(--border-light); color: var(--text); }
+
+        /* Counter input (inline) */
+        .counter-input-row {
+            display: none;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .counter-input-row.visible { display: flex; }
+
+        .counter-input {
+            flex: 1;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.7rem 0.9rem 0.7rem 2.2rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+            -moz-appearance: textfield;
+            position: relative;
+        }
+
+        .counter-input::-webkit-inner-spin-button,
+        .counter-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+        .counter-input:focus { border-color: var(--accent); }
+
+        .counter-input-wrap {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .counter-currency {
+            position: absolute;
+            left: 0.75rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .btn-send-counter {
+            padding: 0.7rem 1rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1.5px solid rgba(200,240,96,0.25);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .btn-send-counter:hover {
+            background: var(--accent);
+            color: #0e0f0c;
+        }
+
+        .btn-cancel-counter {
+            padding: 0.7rem 0.8rem;
+            background: none;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-cancel-counter:hover { color: var(--text); }
 
         /* ── Toast ── */
         .toast {
-            position: fixed; bottom: 2rem; left: 50%;
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 0.65rem 1.1rem;
-            font-size: 0.82rem; font-weight: 500;
-            display: flex; align-items: center; gap: 8px;
-            opacity: 0; pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-            z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            background: var(--card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 0.65rem 1.1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.25s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 7px;
         }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .toast.success .toast-dot { background: var(--green); }
-        .toast.error .toast-dot { background: var(--red); }
 
-        /* ── Withdraw confirm ── */
-        .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex; align-items: center; justify-content: center;
-            padding: 1rem; opacity: 0; pointer-events: none;
-            transition: opacity 0.2s; z-index: 500;
-            backdrop-filter: blur(6px);
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
-        .modal-overlay.open { opacity: 1; pointer-events: all; }
 
-        .modal {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 1.75rem;
-            max-width: 360px; width: 100%;
-            transform: translateY(16px) scale(0.97);
-            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        .toast.success { border-color: var(--accent); color: var(--accent); }
+        .toast.error   { border-color: var(--red);    color: var(--red); }
+
+        .toast svg {
+            width: 13px; height: 13px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2.2; stroke-linecap: round;
         }
-        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-        .modal h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
-        .modal p { font-size: 0.8rem; color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; }
-        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
-        .btn-cancel { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; padding: 0.5rem 1rem; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
-        .btn-cancel:hover { border-color: var(--border-light); color: var(--text); }
+        /* ── Info notice ── */
+        .info-notice {
+            font-size: 0.73rem;
+            color: var(--muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            line-height: 1.5;
+        }
 
-        .btn-withdraw-confirm { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 0.5rem 1rem; background: var(--red-dim); border: 1px solid rgba(240,96,96,0.3); border-radius: 8px; color: var(--red); cursor: pointer; transition: all 0.15s; }
-        .btn-withdraw-confirm:hover { background: var(--red); color: #fff; }
+        .info-notice svg {
+            width: 13px; height: 13px;
+            stroke: currentColor; fill: none;
+            stroke-width: 1.8; stroke-linecap: round;
+            flex-shrink: 0;
+        }
 
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
-            .summary-row { grid-template-columns: repeat(2, 1fr); }
+        /* ── Divider ── */
+        .or-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            color: var(--subtle);
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        @media (max-width: 520px) {
+            .action-row { flex-direction: column; }
+            .neg-actions { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-<div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-mark">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <span class="logo-name">Dakdao</span>
-        </div>
-
-        <div class="nav-section">Main</div>
-        <a class="nav-item" href="worker-dashboard.html">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            Dashboard
+    <!-- Top nav -->
+    <div class="topnav">
+        <a class="back-btn" href="worker-dashboard.html">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to dashboard
         </a>
-        <a class="nav-item" href="worker-dashboard.html">
-            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Available Tasks
-        </a>
-        <a class="nav-item active" href="#">
-            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            My Offers
-            <span class="badge" id="pendingBadge">–</span>
-        </a>
-        <a class="nav-item" href="#">
-            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            My Tasks
-        </a>
-
-        <div class="nav-section">Account</div>
-        <a class="nav-item" href="profile.html">
-            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Profile
-        </a>
-        <button class="nav-item" onclick="logout()">
-            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Sign out
-        </button>
-
-        <div class="sidebar-footer">
-            <div class="worker-chip">
-                <div class="worker-av-sm" id="sidebarAvatar">–</div>
-                <div class="worker-info">
-                    <div class="wname" id="sidebarName">–</div>
-                    <div class="wrole">Worker</div>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main -->
-    <main class="main">
-        <div class="topbar">
-            <div class="page-title">
-                <h1>My Offers</h1>
-                <p>Track every offer you've sent and its current status</p>
-            </div>
-        </div>
-
-        <!-- Summary stats -->
-        <div class="summary-row">
-            <div class="sum-card">
-                <div class="sum-num" id="sumTotal">–</div>
-                <div class="sum-label">Total sent</div>
-            </div>
-            <div class="sum-card">
-                <div class="sum-num" style="color:var(--amber)" id="sumPending">–</div>
-                <div class="sum-label">Pending</div>
-            </div>
-            <div class="sum-card">
-                <div class="sum-num" style="color:var(--green)" id="sumAccepted">–</div>
-                <div class="sum-label">Accepted</div>
-            </div>
-            <div class="sum-card">
-                <div class="sum-num" style="color:var(--muted)" id="sumRejected">–</div>
-                <div class="sum-label">Declined</div>
-            </div>
-        </div>
-
-        <!-- Filter -->
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterOffers('all', this)">All <span class="fc" id="fcAll">0</span></button>
-            <button class="filter-btn" onclick="filterOffers('pending', this)">Pending <span class="fc" id="fcPending">0</span></button>
-            <button class="filter-btn" onclick="filterOffers('accepted', this)">Accepted <span class="fc" id="fcAccepted">0</span></button>
-            <button class="filter-btn" onclick="filterOffers('rejected', this)">Declined <span class="fc" id="fcRejected">0</span></button>
-        </div>
-
-        <!-- Offers list -->
-        <div class="offers-list" id="offersList">
-            <!-- skeleton -->
-            ${[1,2,3].map(() => `
-            <div class="offer-row-card">
-                <div class="offer-row-top">
-                    <div>
-                        <div class="skeleton" style="height:14px;width:70%;margin-bottom:8px"></div>
-                        <div class="skeleton" style="height:11px;width:45%"></div>
-                    </div>
-                    <div class="skeleton" style="height:28px;width:80px"></div>
-                </div>
-            </div>`).join("")}
-        </div>
-    </main>
-</div>
-
-<!-- Withdraw confirm modal -->
-<div class="modal-overlay" id="withdrawModal" onclick="handleModalOverlay(event)">
-    <div class="modal">
-        <h3>Withdraw this offer?</h3>
-        <p>The customer won't see your offer anymore. You can send a new one if you change your mind.</p>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal()">Keep it</button>
-            <button class="btn-withdraw-confirm" id="withdrawConfirmBtn" onclick="executeWithdraw()">Withdraw</button>
+        <div class="logo-mark">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </div>
     </div>
-</div>
 
-<!-- Toast -->
-<div class="toast" id="toast">
-    <span class="toast-dot"></span>
-    <span id="toastMsg">–</span>
-</div>
+    <div class="page">
+
+        <!-- Task info card -->
+        <div class="task-card" id="taskCard">
+            <div class="task-card-label">Task details</div>
+            <div class="task-card-title skeleton" id="taskTitle" style="height:44px;border-radius:8px;"></div>
+            <div class="task-meta-row" id="taskMeta" style="margin-top:1rem;">
+                <div class="skeleton" style="width:100px;height:28px;border-radius:6px;"></div>
+                <div class="skeleton" style="width:80px;height:28px;border-radius:6px;"></div>
+            </div>
+            <div class="task-listed-price" id="taskPriceRow" style="display:none;">
+                <span>Listed price</span>
+                <span id="taskListedPrice">৳ –</span>
+            </div>
+        </div>
+
+        <!-- Send offer card -->
+        <div class="offer-card" id="offerCard">
+            <div class="offer-card-head">
+                <h2>Send your offer</h2>
+                <span class="pill green">New offer</span>
+            </div>
+            <div class="offer-card-body">
+
+                <div class="price-input-group">
+                    <div class="input-label">
+                        Your price
+                        <span class="input-hint">BDT (Taka)</span>
+                    </div>
+                    <div class="price-input-wrap">
+                        <span class="price-currency">৳</span>
+                        <input
+                            class="price-input"
+                            type="number"
+                            id="offerPrice"
+                            placeholder="0"
+                            min="1"
+                        >
+                    </div>
+                    <div class="quick-prices" id="quickPrices">
+                        <!-- populated from task price -->
+                    </div>
+                </div>
+
+                <div class="price-input-group">
+                    <div class="input-label">Note <span class="input-hint">optional</span></div>
+                    <textarea
+                        class="note-textarea"
+                        id="offerNote"
+                        placeholder="Tell the customer why you're the right person for this task…"
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <div class="info-notice">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    The customer will be able to counter-offer. You'll be notified if they respond.
+                </div>
+
+                <div class="action-row">
+                    <button class="btn-secondary" onclick="history.back()">Cancel</button>
+                    <button class="btn-primary" id="sendOfferBtn" onclick="sendOffer()">
+                        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        Send offer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Negotiation panel (visible when worker has a pending offer) -->
+        <div class="negotiation-panel" id="negotiationPanel">
+            <div class="negotiation-head">
+                <h2>Offer negotiation</h2>
+                <span class="pill amber" id="negStatusPill">Pending</span>
+            </div>
+            <div class="negotiation-body">
+
+                <div class="neg-price-display">
+                    <div>
+                        <div class="neg-price-label">Current price</div>
+                        <div class="neg-price-val" id="negCurrentPrice">৳ –</div>
+                    </div>
+                    <div class="neg-by" id="negLastBy">–</div>
+                </div>
+
+               <div class="neg-actions" id="negActions">
+                    <button class="btn-chat" id="goToChatBtn" onclick="goToChat()">
+                        <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Open Chat Hub
+                    </button>
+
+                    <button class="btn-accept" id="acceptNegBtn" onclick="acceptNegotiation()">
+                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        Accept this price
+                    </button>
+                    <button class="btn-counter" onclick="toggleCounterInput()">
+                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Counter offer
+                    </button>
+                </div>
+
+                <div class="counter-input-row" id="counterInputRow">
+                    <div class="counter-input-wrap">
+                        <span class="counter-currency">৳</span>
+                        <input
+                            class="counter-input"
+                            type="number"
+                            id="counterPrice"
+                            placeholder="Your counter price"
+                            min="1"
+                        >
+                    </div>
+                    <button class="btn-send-counter" onclick="sendCounterOffer()">Send</button>
+                    <button class="btn-cancel-counter" onclick="toggleCounterInput()">✕</button>
+                </div>
+
+                <div class="info-notice" id="ownOfferNotice" style="display:none;">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    You made the last offer. Waiting for the customer to respond.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <svg id="toastIcon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="toastMsg">–</span>
+    </div>
 
 <script>
     const API   = "http://localhost:5000";
@@ -427,206 +840,378 @@
 
     if (!token || !user) { window.location.href = "login.html"; }
 
-    // Set sidebar
-    const initials = user?.name ? user.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase() : "W";
-    document.getElementById("sidebarAvatar").textContent = initials;
-    document.getElementById("sidebarName").textContent   = user?.name?.split(" ")[0] || "–";
+    // Read task_id from URL query param e.g. worker-offer.html?task_id=12
+    const params   = new URLSearchParams(window.location.search);
+    const taskId   = params.get("task_id");
+    let   offerId  = null;   // set if worker already has a pending offer
+    let   taskData = null;
 
-    let allOffers      = [];
-    let pendingWithdraw = null;
+    // ── Boot ─────────────────────────────────────────────────────
+    (async () => {
+        if (!taskId) {
+            showToast("No task selected.", "error");
+            return;
+        }
+        await Promise.all([loadTask(), loadMyOffer()]);
+    })();
 
-    const typeLabel = { initial: "Initial offer", increase: "Counter — higher", decrease: "Counter — lower" };
-    const typeIcon  = { initial: "💬", increase: "📈", decrease: "📉" };
-
-    // ── Helpers ───────────────────────────────────────────────────
-    const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
-    function fmtDate(d) {
-        if (!d) return "–";
-        return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
-    }
-
-    function fmtPrice(p) { return p ? "৳ " + Number(p).toLocaleString("en-IN") : "–"; }
-
-    function showToast(msg, type = "success") {
-        const t = document.getElementById("toast");
-        document.getElementById("toastMsg").textContent = msg;
-        t.className = `toast ${type} show`;
-        setTimeout(() => t.classList.remove("show"), 3000);
-    }
-
-    // ── Load offers ───────────────────────────────────────────────
-    async function loadOffers() {
+    // ── Load task details ─────────────────────────────────────────
+    async function loadTask() {
         try {
-            const res = await fetch(`${API}/api/offers/my`, {
+            const res  = await fetch(`${API}/api/tasks/${taskId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!res.ok) throw new Error();
             const data = await res.json();
-            allOffers = data.offers || [];
+            taskData   = data.task || data;
 
-            const pending  = allOffers.filter(o => o.status === "pending").length;
-            const accepted = allOffers.filter(o => o.status === "accepted").length;
-            const rejected = allOffers.filter(o => o.status === "rejected").length;
+            // Title
+            const titleEl = document.getElementById("taskTitle");
+            titleEl.classList.remove("skeleton");
+            titleEl.style.height = "";
+            titleEl.textContent  = taskData.description || "–";
 
-            // Stats
-            document.getElementById("sumTotal").textContent    = allOffers.length;
-            document.getElementById("sumPending").textContent  = pending;
-            document.getElementById("sumAccepted").textContent = accepted;
-            document.getElementById("sumRejected").textContent = rejected;
+            // Meta chips
+            const metaEl = document.getElementById("taskMeta");
+            metaEl.innerHTML = [
+                taskData.location_text ? `
+                    <span class="task-meta-chip">
+                        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        ${esc(taskData.location_text)}
+                    </span>` : "",
+                taskData.category_name ? `<span class="task-meta-chip">${esc(taskData.category_name)}</span>` : "",
+                taskData.created_at ? `
+                    <span class="task-meta-chip">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        ${fmtDate(taskData.created_at)}
+                    </span>` : ""
+            ].join("");
 
-            // Filter counts
-            document.getElementById("fcAll").textContent      = allOffers.length;
-            document.getElementById("fcPending").textContent  = pending;
-            document.getElementById("fcAccepted").textContent = accepted;
-            document.getElementById("fcRejected").textContent = rejected;
+            // Price row
+            if (taskData.initial_price) {
+                document.getElementById("taskPriceRow").style.display = "flex";
+                document.getElementById("taskListedPrice").textContent = fmtPrice(taskData.initial_price);
+                buildQuickPrices(parseFloat(taskData.initial_price));
+            }
 
-            // Sidebar badge
-            document.getElementById("pendingBadge").textContent = pending || "0";
-
-            renderOffers(allOffers);
-
-        } catch (e) {
-            document.getElementById("offersList").innerHTML = `
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <h3>Could not load offers</h3>
-                    <p>Check your connection and try again</p>
-                </div>`;
+        } catch {
+            document.getElementById("taskTitle").textContent = "Could not load task details.";
         }
     }
 
-    function renderOffers(offers) {
-        const list = document.getElementById("offersList");
+    // ── Build quick-price chips ───────────────────────────────────
+    function buildQuickPrices(listed) {
+        const prices = [
+            Math.round(listed * 0.8),
+            Math.round(listed * 0.9),
+            listed,
+            Math.round(listed * 1.1)
+        ].filter((v, i, a) => a.indexOf(v) === i);
 
-        if (offers.length === 0) {
-            list.innerHTML = `
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    <h3>No offers here</h3>
-                    <p>Browse available tasks and send your first offer</p>
-                </div>`;
-            return;
+        document.getElementById("quickPrices").innerHTML = prices.map(p =>
+            `<button class="quick-btn" onclick="setPrice(${p})">৳ ${p.toLocaleString("en-IN")}</button>`
+        ).join("");
+    }
+
+    function setPrice(p) {
+        document.getElementById("offerPrice").value = p;
+        document.getElementById("offerPrice").focus();
+    }
+
+    async function loadOfferDetails() {
+    try {
+        const response = await fetch(`${API}/api/offers/my`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Find if there is a pending offer for this specific task
+            const activeOffer = data.offers.find(o => o.task_id == taskId && o.status === 'pending');
+            
+            if (activeOffer) {
+                // 1. Populate your existing UI text fields...
+                document.getElementById("negCurrentPrice").textContent = `৳ ${activeOffer.offer_price}`;
+                
+                // 2. CRITICAL: Trigger the UI state handler to unhide the chat button
+                checkOfferUIState(true); 
+            } else {
+                checkOfferUIState(false);
+            }
         }
-
-        list.innerHTML = offers.map(offer => `
-            <div class="offer-row-card ${offer.status}" id="offerCard-${offer.id}">
-                <div class="offer-row-top">
-                    <div>
-                        <div class="offer-task-desc">
-                            ${esc(offer.description?.slice(0,90) || "Task")}${offer.description?.length > 90 ? "…" : ""}
-                        </div>
-                        <div class="offer-task-meta">
-                            <span class="meta-chip">
-                                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                ${esc(offer.location_text || "No location")}
-                            </span>
-                            <span class="meta-chip">
-                                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                ${esc(offer.customer_name || "Customer")}
-                            </span>
-                            <span class="meta-chip">
-                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                ${fmtDate(offer.created_at)}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="offer-right">
-                        <div class="offer-amount ${offer.status}">${fmtPrice(offer.offer_price)}</div>
-                        <span class="status-pill ${offer.status}">${offer.status}</span>
-                    </div>
-                </div>
-
-                <div class="offer-row-footer">
-                    <div class="offer-type-tag">
-                        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                        ${typeIcon[offer.offer_type] || ""} ${typeLabel[offer.offer_type] || offer.offer_type}
-                        ${offer.task_status ? ` &nbsp;·&nbsp; Task: <span style="text-transform:capitalize">${offer.task_status}</span>` : ""}
-                    </div>
-                    <div>
-                        ${offer.status === "pending" ? `
-                            <button class="withdraw-btn" onclick="confirmWithdraw(${offer.id})">Withdraw</button>
-                        ` : offer.status === "accepted" ? `
-                            <div class="accepted-banner">
-                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                                Offer accepted — task confirmed
-                            </div>
-                        ` : `
-                            <span style="font-size:0.72rem;color:var(--subtle)">Offer declined by customer</span>
-                        `}
-                    </div>
-                </div>
-            </div>
-        `).join("");
+    } catch (error) {
+        console.error("UI Synchronization failed:", error);
     }
+}
 
-    // ── Filter ────────────────────────────────────────────────────
-    function filterOffers(status, el) {
-        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-        el.classList.add("active");
-        const filtered = status === "all" ? allOffers : allOffers.filter(o => o.status === status);
-        renderOffers(filtered);
-    }
-
-    // ── Withdraw ──────────────────────────────────────────────────
-    function confirmWithdraw(offerId) {
-        pendingWithdraw = offerId;
-        document.getElementById("withdrawModal").classList.add("open");
-    }
-
-    function closeModal() {
-        document.getElementById("withdrawModal").classList.remove("open");
-        pendingWithdraw = null;
-    }
-
-    function handleModalOverlay(e) {
-        if (e.target === document.getElementById("withdrawModal")) closeModal();
-    }
-
-    async function executeWithdraw() {
-        if (!pendingWithdraw) return;
-        const btn = document.getElementById("withdrawConfirmBtn");
-        btn.disabled = true;
-        btn.textContent = "Withdrawing…";
-
+    // ── Load worker's existing offer on this task ─────────────────
+    async function loadMyOffer() {
         try {
-            const res = await fetch(`${API}/api/offers/${pendingWithdraw}`, {
-                method: "DELETE",
+            const res  = await fetch(`${API}/api/offers/my`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            if (!res.ok) return;
             const data = await res.json();
+            const offers = data.offers || data || [];
 
-            if (data.success) {
-                closeModal();
-                showToast("Offer withdrawn", "success");
-                // Remove from local list
-                allOffers = allOffers.filter(o => o.id !== pendingWithdraw);
-                // Refresh stats
-                const pending  = allOffers.filter(o => o.status === "pending").length;
-                document.getElementById("sumTotal").textContent    = allOffers.length;
-                document.getElementById("sumPending").textContent  = pending;
-                document.getElementById("fcAll").textContent       = allOffers.length;
-                document.getElementById("fcPending").textContent   = pending;
-                document.getElementById("pendingBadge").textContent = pending || "0";
-                renderOffers(allOffers);
-            } else {
-                showToast(data.message || "Failed to withdraw", "error");
-                btn.disabled = false;
-                btn.textContent = "Withdraw";
+            const existing = offers.find(o =>
+                String(o.task_id) === String(taskId) && o.status === "pending"
+            );
+
+            if (!existing) return;
+
+            offerId = existing.id;
+            showNegotiationPanel(existing);
+
+        } catch { /* ignore */ }
+    }
+            // 1. Navigation Redirect Linker
+        function goToChat() {
+            // 1. Try to get '?id=' from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let taskId = urlParams.get("id");
+
+            // 2. Fallback: Try to get '?task_id=' from URL if 'id' wasn't used
+            if (!taskId) {
+                taskId = urlParams.get("task_id");
             }
-        } catch (e) {
-            showToast("Could not connect to server", "error");
-            btn.disabled = false;
-            btn.textContent = "Withdraw";
+
+            // 3. Fallback: If you have a global object/variable tracking the loaded task
+            if (!taskId && typeof currentTask !== 'undefined' && currentTask.id) {
+                taskId = currentTask.id;
+            }
+            if (!taskId && typeof task !== 'undefined' && task.id) {
+                taskId = task.id;
+            }
+
+            // Redirect if found, otherwise throw custom debug alert
+            if (taskId) {
+                window.location.href = `chat.html?id=${taskId}`;
+            } else {
+                // This alert will now tell you exactly what query parameters actually exist in your URL bar right now
+                alert(`Debug Error: Could not find task ID. Your current URL query string is: ${window.location.search}`);
+            }
+        }
+
+        // 2. Logic Handler Integration Hook
+        // Call this line inside your existing offer state engine check (where you show/hide the negotiation panel)
+        function checkOfferUIState(hasActiveOffer) {
+            const chatBtn = document.getElementById("goToChatBtn");
+            
+            if (hasActiveOffer) {
+                document.getElementById("offerCard").style.display = "none";
+                document.getElementById("negotiationPanel").style.display = "block";
+                
+                // Unhide chat access window
+                chatBtn.style.display = "inline-flex"; 
+            } else {
+                document.getElementById("offerCard").style.display = "block";
+                document.getElementById("negotiationPanel").style.display = "none";
+                
+                chatBtn.style.display = "none";
+            }
+        }
+
+    // ── Show negotiation panel ────────────────────────────────────
+    function showNegotiationPanel(offer) {
+        // Hide send-offer card, show negotiation panel
+        document.getElementById("offerCard").style.display = "none";
+        document.getElementById("negotiationPanel").classList.add("visible");
+
+        document.getElementById("negCurrentPrice").textContent = fmtPrice(offer.offer_price);
+
+        const isMyTurn  = offer.last_action_by !== user.id;
+        const lastByMe  = offer.last_action_by === user.id;
+
+        document.getElementById("negLastBy").textContent =
+            lastByMe ? "Awaiting customer" : "Customer countered";
+
+        const acceptBtn = document.getElementById("acceptNegBtn");
+        const ownNotice = document.getElementById("ownOfferNotice");
+
+        if (lastByMe) {
+            // It's the customer's turn — disable accept (can't self-accept)
+            acceptBtn.disabled = true;
+            ownNotice.style.display = "flex";
+        } else {
+            acceptBtn.disabled = false;
+            ownNotice.style.display = "none";
         }
     }
 
-    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+    // ── Toggle counter input ──────────────────────────────────────
+    function toggleCounterInput() {
+        const row = document.getElementById("counterInputRow");
+        const isVisible = row.classList.contains("visible");
+        row.classList.toggle("visible", !isVisible);
+        if (!isVisible) document.getElementById("counterPrice").focus();
+    }
 
-    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+    // ── Send initial offer ────────────────────────────────────────
+    async function sendOffer() {
+        const price = parseFloat(document.getElementById("offerPrice").value);
+        if (!price || price <= 0) {
+            showToast("Enter a valid price.", "error"); return;
+        }
 
-    // ── Boot ──────────────────────────────────────────────────────
-    loadOffers();
+        const btn = document.getElementById("sendOfferBtn");
+        btn.disabled = true;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Sending…`;
+
+        try {
+            const res = await fetch(`${API}/api/offers`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ task_id: parseInt(taskId), offer_price: price })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Failed to send offer.", "error");
+                btn.disabled = false;
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send offer`;
+                return;
+            }
+
+            offerId = data.offerId;
+            showToast("Offer sent!", "success");
+
+            // Simulate a freshly-sent offer object for the panel
+            showNegotiationPanel({
+                id: offerId,
+                offer_price: price,
+                offer_type: "initial",
+                status: "pending",
+                last_action_by: user.id
+            });
+
+        } catch {
+            showToast("Network error. Try again.", "error");
+            btn.disabled = false;
+            btn.innerHTML = `<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send offer`;
+        }
+    }
+
+    // ── Send counter offer ────────────────────────────────────────
+    async function sendCounterOffer() {
+        const price = parseFloat(document.getElementById("counterPrice").value);
+        if (!price || price <= 0) {
+            showToast("Enter a valid counter price.", "error"); return;
+        }
+
+        try {
+            const res = await fetch(`${API}/api/offers/${offerId}/counter`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ counter_price: price })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Failed to send counter.", "error"); return;
+            }
+
+            showToast("Counter offer sent!", "success");
+
+            // Refresh panel state
+            showNegotiationPanel({
+                id: offerId,
+                offer_price: price,
+                offer_type: "counter",
+                status: "pending",
+                last_action_by: user.id
+            });
+
+            toggleCounterInput();
+            document.getElementById("counterPrice").value = "";
+
+        } catch {
+            showToast("Network error.", "error");
+        }
+    }
+
+    // ── Accept negotiation ────────────────────────────────────────
+    async function acceptNegotiation() {
+        const btn = document.getElementById("acceptNegBtn");
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${API}/api/offers/${offerId}/accept-negotiation`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Could not accept.", "error");
+                btn.disabled = false;
+                return;
+            }
+
+            showToast("Task confirmed! 🎉", "success");
+            document.getElementById("negStatusPill").textContent = "Confirmed";
+            document.getElementById("negStatusPill").className   = "pill green";
+            document.getElementById("negActions").innerHTML =
+                `<div style="font-size:0.8rem;color:var(--muted);text-align:center;width:100%;padding:0.5rem 0">
+                    Task is confirmed. Head back to your dashboard.
+                </div>`;
+
+            setTimeout(() => { window.location.href = "worker-dashboard.html"; }, 1800);
+
+        } catch {
+            showToast("Network error.", "error");
+            btn.disabled = false;
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function esc(s) {
+        return String(s)
+            .replace(/&/g,"&amp;")
+            .replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;");
+    }
+
+    function fmtDate(d) {
+        if (!d) return "";
+        return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+    }
+
+    function fmtPrice(p) {
+        if (!p) return "৳ –";
+        return "৳ " + Number(p).toLocaleString("en-IN");
+    }
+
+    let toastTimer;
+    function showToast(msg, type = "success") {
+        const toast   = document.getElementById("toast");
+        const msgEl   = document.getElementById("toastMsg");
+        const iconEl  = document.getElementById("toastIcon");
+
+        toast.className = `toast ${type}`;
+        msgEl.textContent = msg;
+        iconEl.innerHTML  = type === "success"
+            ? `<polyline points="20 6 9 17 4 12"/>`
+            : `<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>`;
+
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+    }
 </script>
+
+<style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
 </body>
 </html>

@@ -9,11 +9,14 @@ const authRoutes = require("./routes/auth.routes");
 const profileRoutes = require("./routes/profile.routes");
 const taskRoutes = require("./routes/task.routes");
 const offerRoutes = require("./routes/offer.routes");
+const messageRoutes = require("./routes/message.routes");
+const workerRoutes = require("./routes/worker.routes"); 
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 app.use("/uploads",express.static(path.join(__dirname, "../uploads")));
@@ -22,7 +25,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", offerRoutes);
+app.use("/api", messageRoutes);
+app.use("/api", workerRoutes);
 
+
+app.get("/", (req, res) => {
+    res.json({ message: "Welcome to DakDao API Service Layers Engine" });
+});
 app.get("/", (req, res) => {
     res.json({
         message: "Dakdao API Running"

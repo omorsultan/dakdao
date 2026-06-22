@@ -1,6 +1,5 @@
-// controllers/task.controller.js
 const pool = require("../config/db");
-
+const { logActivity } = require("../utils/logger");
 
 // POST A TASK (customer)
 exports.createTask = async (req, res) => {
@@ -37,9 +36,14 @@ exports.createTask = async (req, res) => {
             ]
         );
 
+        const newTaskId = result.insertId;
+
+        // 📝 LOG ACTIVITY: New task requisition opened
+        await logActivity(req, `Posted a new service requirement for bidding. Value context set to ৳${initial_price || 0}`, "tasks", newTaskId);
+
         res.status(201).json({
             success: true,
-            taskId: result.insertId,
+            taskId: newTaskId,
             message: "Task posted successfully"
         });
 
@@ -48,8 +52,7 @@ exports.createTask = async (req, res) => {
     }
 };
 
-
-// GET ALL OPEN TASKS (for workers to browse)
+// GET ALL OPEN TASKS (Read-only)
 exports.getOpenTasks = async (req, res) => {
     try {
         const { status = "open", limit = 20, offset = 0 } = req.query;
@@ -77,8 +80,7 @@ exports.getOpenTasks = async (req, res) => {
     }
 };
 
-
-// GET CUSTOMER'S OWN TASKS
+// GET CUSTOMER'S OWN TASKS (Read-only)
 exports.getMyTasks = async (req, res) => {
     try {
         const [tasks] = await pool.query(
@@ -101,11 +103,9 @@ exports.getMyTasks = async (req, res) => {
     }
 };
 
-
-// GET TASKS ASSIGNED TO A WORKER
+// GET TASKS ASSIGNED TO A WORKER (Read-only)
 exports.getAssignedTasks = async (req, res) => {
     try {
-        // Tasks where worker has an accepted offer
         const [tasks] = await pool.query(
             `
             SELECT
@@ -132,8 +132,7 @@ exports.getAssignedTasks = async (req, res) => {
     }
 };
 
-
-// GET SINGLE TASK
+// GET SINGLE TASK (Read-only)
 exports.getTaskById = async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -142,7 +141,11 @@ exports.getTaskById = async (req, res) => {
                 t.*,
                 c.name AS category_name,
                 u.name AS customer_name,
-                u.mobile AS customer_mobile
+                u.mobile AS customer_mobile,
+                COALESCE(
+                    (SELECT o.offer_price FROM task_offers o WHERE o.task_id = t.id AND o.status = 'accepted' LIMIT 1),
+                    t.initial_price
+                ) AS final_display_price
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.customer_id = u.id
@@ -162,7 +165,6 @@ exports.getTaskById = async (req, res) => {
     }
 };
 
-
 // UPDATE TASK STATUS
 exports.updateTaskStatus = async (req, res) => {
     try {
@@ -173,7 +175,6 @@ exports.updateTaskStatus = async (req, res) => {
             return res.status(400).json({ message: "Invalid status" });
         }
 
-        // Only the task owner can update status
         const [rows] = await pool.query(
             "SELECT id FROM tasks WHERE id = ? AND customer_id = ?",
             [req.params.id, req.user.id]
@@ -188,13 +189,15 @@ exports.updateTaskStatus = async (req, res) => {
             [status, req.params.id]
         );
 
+        // 📝 LOG ACTIVITY: State Engine Change Logging
+        await logActivity(req, `Manually updated task status execution phase to: ${status}`, "tasks", req.params.id);
+
         res.json({ success: true, message: `Task marked as ${status}` });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // DELETE / CANCEL TASK
 exports.deleteTask = async (req, res) => {
@@ -216,6 +219,9 @@ exports.deleteTask = async (req, res) => {
 
         await pool.query("DELETE FROM tasks WHERE id = ?", [req.params.id]);
 
+        // 📝 LOG ACTIVITY: Task purged completely 
+        await logActivity(req, "Permanently dropped task listing constraint from application lifecycle", "tasks", req.params.id);
+
         res.json({ success: true, message: "Task deleted" });
 
     } catch (error) {
@@ -223,8 +229,7 @@ exports.deleteTask = async (req, res) => {
     }
 };
 
-
-// GET ALL CATEGORIES
+// GET ALL CATEGORIES (Read-only)
 exports.getCategories = async (req, res) => {
     try {
         const [categories] = await pool.query(
@@ -235,10 +240,10 @@ exports.getCategories = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-// SEARCH / FILTER TASKS (Publicly accessible with user input)
+
+// SEARCH / FILTER TASKS (Read-only)
 exports.searchTasks = async (req, res) => {
     try {
-        // Grab inputs from the query parameters (?category=3&location=kawla)
         const { category_id, location, min_price } = req.query;
         
         let sql = `
@@ -250,14 +255,13 @@ exports.searchTasks = async (req, res) => {
         `;
         const queryParams = [];
 
-        // Dynamically build the query based on what the user inputted
         if (category_id) {
             sql += " AND t.category_id = ?";
             queryParams.push(category_id);
         }
         if (location) {
             sql += " AND t.location_text LIKE ?";
-            queryParams.push(`%${location}%`); // Matches partial text search
+            queryParams.push(`%${location}%`);
         }
         if (min_price) {
             sql += " AND t.initial_price >= ?";

@@ -1,3 +1,4 @@
+<!-- worker-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -821,7 +822,7 @@
                     <div class="section-head">
                         <h3>Available tasks near you</h3>
                         <div class="section-head-right">
-                            <span class="pill green" id="availableCount">0 open</span>
+                            <span class="pill green" id="availableCount">0 </span>
                             <a class="text-btn" href="#">View all →</a>
                         </div>
                     </div>
@@ -967,7 +968,6 @@
         isOnline = !isOnline;
         localStorage.setItem("workerOnline", isOnline);
         updateAvailUI();
-        // TODO: POST to /api/worker/availability when endpoint exists
     }
 
     // ── Helpers ───────────────────────────────────────────────────
@@ -1000,21 +1000,13 @@
             const data = await res.json();
             const p = data.profile || data;
 
-            if (p.full_name) {
-                document.getElementById("profileName").textContent   = p.full_name;
-                document.getElementById("sidebarName").textContent   = p.full_name.split(" ")[0];
-                const ini = p.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-                document.getElementById("profileAvatar").textContent = ini;
-                document.getElementById("sidebarAvatar").textContent = ini;
-            }
-
-            // Verification
+            // Verification status indicators
             const hasProfile = !!(p.full_name && p.nid_number);
             setVerif("verifProfile", hasProfile ? "ok" : "pending", hasProfile ? "✓ Done" : "Incomplete");
             setVerif("verifNID",     p.nid_number ? "ok" : "none",  p.nid_number ? "✓ Done" : "Missing");
             setVerif("verifAdmin",   p.is_verified ? "ok" : "pending", p.is_verified ? "✓ Verified" : "Pending");
 
-            // Skills
+            // Render Skills Wrap Elements
             const skillsWrap = document.getElementById("skillsWrap");
             if (p.skills) {
                 const tags = p.skills.split(",").map(s => s.trim()).filter(Boolean);
@@ -1030,8 +1022,10 @@
 
     function setVerif(id, type, label) {
         const el = document.getElementById(id);
-        el.className = `verif-status ${type}`;
-        el.textContent = label;
+        if (el) {
+            el.className = `verif-status ${type}`;
+            el.textContent = label;
+        }
     }
 
     // ── Fetch available tasks ─────────────────────────────────────
@@ -1060,14 +1054,14 @@
             }
 
             container.innerHTML = tasks.slice(0, 6).map(task => `
-                <div class="task-item">
+                <div class="task-item" onclick="window.location.href='task-detail-view.html?id=${task.id}'">
                     <div class="task-item-top">
                         <h4>${esc(task.description.slice(0,80))}${task.description.length > 80 ? "…" : ""}</h4>
-                        <span class="task-price">${fmtPrice(task.initial_price)}</span>
+                        <span class="task-price">${fmtPrice(task.final_display_price)}</span>
                     </div>
                     <div class="task-meta">
                         <span class="task-meta-item">
-                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                             ${esc(task.location_text || "Location not set")}
                         </span>
                         <span class="task-meta-item">
@@ -1076,9 +1070,7 @@
                         </span>
                         ${task.category_name ? `<span class="task-meta-item">${esc(task.category_name)}</span>` : ""}
                     </div>
-                    <button class="offer-btn" onclick="makeOffer(${task.id})">
-                        Send offer
-                        </button>
+                    <button class="offer-btn" onclick="event.stopPropagation(); makeOffer(${task.id})">Send offer</button>
                 </div>
             `).join("");
 
@@ -1092,7 +1084,7 @@
     }
 
     // ── Fetch my tasks ────────────────────────────────────────────
-    async function loadMyTasks() {
+   async function loadMyTasks() {
         const container = document.getElementById("myTasksList");
         try {
             const res = await fetch(`${API}/api/tasks/assigned`, {
@@ -1105,24 +1097,18 @@
             const active    = tasks.filter(t => ["negotiating","confirmed"].includes(t.status));
             const completed = tasks.filter(t => t.status === "completed");
 
-            // Stats
+            // Stats Layout Injection
             document.getElementById("statCompleted").textContent  = completed.length;
             document.getElementById("statActive").textContent     = active.length;
             document.getElementById("trendCompleted").textContent = completed.length > 0 ? `+${completed.length}` : "0";
             document.getElementById("trendActive").textContent    = active.length > 0 ? `${active.length} live` : "none";
 
-            // Earnings rough calc
-            const totalEarned = completed.reduce((s, t) => s + (parseFloat(t.initial_price) || 0), 0);
-            document.getElementById("statEarnings").textContent   = "৳ " + totalEarned.toLocaleString("en-IN");
-            document.getElementById("trendEarnings").textContent  = totalEarned > 0 ? "+" + totalEarned : "0";
-            document.getElementById("monthEarnings").textContent  = "৳ " + totalEarned.toLocaleString("en-IN");
-            document.getElementById("earnCompleted").textContent  = completed.length;
-            document.getElementById("earnAvg").textContent        = completed.length
-                ? "৳ " + Math.round(totalEarned / completed.length).toLocaleString("en-IN")
-                : "৳ 0";
-            document.getElementById("earnPending").textContent    = active.length
-                ? "৳ " + active.reduce((s,t) => s + (parseFloat(t.initial_price)||0), 0).toLocaleString("en-IN")
-                : "৳ 0";
+            // Breakdown Stats
+            document.getElementById("earnCompleted").textContent  = active.length;
+            
+            // Calculate pending amount from current active tasks array
+            const pendingAmount = active.reduce((s, t) => s + (parseFloat(t.final_display_price) || 0), 0);
+            document.getElementById("earnPending").textContent    = fmtPrice(pendingAmount);
 
             if (active.length === 0) {
                 container.innerHTML = `
@@ -1134,7 +1120,7 @@
             }
 
             container.innerHTML = active.slice(0, 5).map(task => `
-                <div class="active-task-item">
+                <div class="active-task-item" onclick="window.location.href='task-detail-view.html?id=${task.id}'" style="cursor:pointer;">
                     <div class="active-task-dot" style="background:var(--${statusColor[task.status] || 'muted'})"></div>
                     <div class="active-task-info">
                         <h4>${esc(task.description.slice(0, 55))}${task.description.length > 55 ? "…" : ""}</h4>
@@ -1145,7 +1131,6 @@
             `).join("");
 
         } catch (e) {
-            // Set zeros on error
             ["statCompleted","statActive","statEarnings","statOffers"].forEach(id => {
                 document.getElementById(id).textContent = "0";
             });
@@ -1159,11 +1144,37 @@
                 </div>`;
         }
     }
+    // ── 2. NEW FUNCTION: FETCH TRUE LIFETIME EARNINGS FROM DATABASE ──
+    async function loadConfirmedEarnings() {
+        try {
+            const res = await fetch(`${API}/api/offers/confirmed-earnings`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (data.success) {
+                const total = data.confirmed_amount;
+                const completedCount = parseInt(document.getElementById("statActive").textContent) || 0;
 
-    // ── Make offer (stub) ─────────────────────────────────────────
+                // Update UI elements using your fmtPrice function
+                document.getElementById("statEarnings").textContent  = fmtPrice(total);
+                document.getElementById("monthEarnings").textContent = fmtPrice(total);
+                document.getElementById("trendEarnings").textContent = total > 0 ? "+" + total.toLocaleString("en-IN") : "0";
+                
+                // Calculate average per task accurately based on global confirmed earnings
+                document.getElementById("earnAvg").textContent = completedCount > 0
+                    ? fmtPrice(Math.round(total / completedCount))
+                    : "৳ 0";
+            }
+        } catch (e) { 
+            console.error("Earnings API endpoint processing failure:", e); 
+        }
+    }
+    // ── Make offer ────────────────────────────────────────────────
     function makeOffer(taskId) {
-    window.location.href = "worker-offer.html";
-}
+        window.location.href = `worker-offer.html?task_id=${taskId}`;
+    }
 
     // ── Logout ────────────────────────────────────────────────────
     function logout() {
@@ -1174,11 +1185,13 @@
         window.location.href = "login.html";
     }
 
-    // ── Boot ──────────────────────────────────────────────────────
+    // ── Boot Initialization Engine ───────────────────────────────
     loadProfile();
     loadAvailableTasks();
     loadMyTasks();
+    loadConfirmedEarnings();
 </script>
+
 
 </body>
 </html>

@@ -1,6 +1,5 @@
-// controllers/offer.controller.js
 const pool = require("../config/db");
-
+const { logActivity } = require("../utils/logger"); // Import logging utility
 
 // WORKER SENDS OFFER ON A TASK
 exports.sendOffer = async (req, res) => {
@@ -13,7 +12,6 @@ exports.sendOffer = async (req, res) => {
             });
         }
 
-        // Get task + customer id
         const [tasks] = await pool.query(
             "SELECT id, customer_id, status FROM tasks WHERE id = ?",
             [task_id]
@@ -31,7 +29,6 @@ exports.sendOffer = async (req, res) => {
             });
         }
 
-        // Prevent duplicate pending offer from same worker
         const [existing] = await pool.query(
             `SELECT id FROM task_offers
              WHERE task_id = ? AND from_user_id = ? AND status = 'pending'`,
@@ -44,7 +41,6 @@ exports.sendOffer = async (req, res) => {
             });
         }
 
-        // Insert offer
         const [result] = await pool.query(
             `INSERT INTO task_offers
              (task_id, from_user_id, to_user_id, offer_price, offer_type, status)
@@ -52,17 +48,24 @@ exports.sendOffer = async (req, res) => {
             [task_id, req.user.id, task.customer_id, offer_price]
         );
 
+        const newOfferId = result.insertId;
+
         // Move task to negotiating if it was open
         if (task.status === "open") {
             await pool.query(
                 "UPDATE tasks SET status = 'negotiating' WHERE id = ?",
                 [task_id]
             );
+            // 📝 LOG ACTIVITY: Task shifted to negotiation stage
+            await logActivity(req, "Task auto-shifted status to negotiating via incoming offer", "tasks", task_id);
         }
+
+        // 📝 LOG ACTIVITY: Worker sent initial proposal bid
+        await logActivity(req, `Worker sent an initial task offer of ৳${offer_price}`, "task_offers", newOfferId);
 
         res.status(201).json({
             success: true,
-            offerId: result.insertId,
+            offerId: newOfferId,
             message: "Offer sent successfully"
         });
 
@@ -71,13 +74,11 @@ exports.sendOffer = async (req, res) => {
     }
 };
 
-
-// GET ALL OFFERS FOR A TASK (customer views offers on their task)
+// GET ALL OFFERS FOR A TASK (Read only - no logging needed)
 exports.getTaskOffers = async (req, res) => {
     try {
         const { task_id } = req.params;
 
-        // Verify the task belongs to this customer
         const [tasks] = await pool.query(
             "SELECT id FROM tasks WHERE id = ? AND customer_id = ?",
             [task_id, req.user.id]
@@ -105,8 +106,7 @@ exports.getTaskOffers = async (req, res) => {
     }
 };
 
-
-// GET WORKER'S OWN OFFERS (worker views offers they sent)
+// GET WORKER'S OWN OFFERS (Read only - no logging needed)
 exports.getMyOffers = async (req, res) => {
     try {
         const [offers] = await pool.query(
@@ -126,7 +126,6 @@ exports.getMyOffers = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // CUSTOMER ACCEPTS AN OFFER
 exports.acceptOffer = async (req, res) => {
@@ -155,24 +154,27 @@ exports.acceptOffer = async (req, res) => {
             return res.status(400).json({ message: "Offer is no longer pending" });
         }
 
-        // Accept this offer
         await pool.query(
             "UPDATE task_offers SET status = 'accepted' WHERE id = ?",
             [offer_id]
         );
 
-        // Reject all other pending offers on same task
         await pool.query(
             `UPDATE task_offers SET status = 'rejected'
              WHERE task_id = ? AND id != ? AND status = 'pending'`,
             [offer.task_id, offer_id]
         );
 
-        // Mark task as confirmed
         await pool.query(
             "UPDATE tasks SET status = 'confirmed' WHERE id = ?",
             [offer.task_id]
         );
+
+        // 📝 LOG ACTIVITY: Customer accepts contract offer
+        await logActivity(req, `Customer accepted task offer proposal`, "task_offers", offer_id);
+        
+        // 📝 LOG ACTIVITY: Task status confirmed via match completion
+        await logActivity(req, `Task confirmed and locked with assigned worker`, "tasks", offer.task_id);
 
         res.json({
             success: true,
@@ -183,7 +185,6 @@ exports.acceptOffer = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // CUSTOMER REJECTS AN OFFER
 exports.rejectOffer = async (req, res) => {
@@ -201,7 +202,9 @@ exports.rejectOffer = async (req, res) => {
             return res.status(404).json({ message: "Offer not found" });
         }
 
-        if (offers[0].customer_id !== req.user.id) {
+        const offer = offers[0];
+
+        if (offer.customer_id !== req.user.id) {
             return res.status(403).json({ message: "Not authorised" });
         }
 
@@ -210,6 +213,9 @@ exports.rejectOffer = async (req, res) => {
             [offer_id]
         );
 
+        // 📝 LOG ACTIVITY: Offer Rejected
+        await logActivity(req, "Customer rejected worker task offer proposal", "task_offers", offer_id);
+
         res.json({ success: true, message: "Offer rejected" });
 
     } catch (error) {
@@ -217,14 +223,13 @@ exports.rejectOffer = async (req, res) => {
     }
 };
 
-
 // WORKER WITHDRAWS THEIR OWN OFFER
 exports.withdrawOffer = async (req, res) => {
     try {
         const { offer_id } = req.params;
 
         const [offers] = await pool.query(
-            "SELECT id, status FROM task_offers WHERE id = ? AND from_user_id = ?",
+            "SELECT id, task_id, status FROM task_offers WHERE id = ? AND from_user_id = ?",
             [offer_id, req.user.id]
         );
 
@@ -238,10 +243,15 @@ exports.withdrawOffer = async (req, res) => {
             });
         }
 
+        const offer = offers[0];
+
         await pool.query(
             "DELETE FROM task_offers WHERE id = ?",
             [offer_id]
         );
+
+        // 📝 LOG ACTIVITY: Offer Withdrawn by Worker
+        await logActivity(req, `Worker withdrew their active bid from task references`, "tasks", offer.task_id);
 
         res.json({ success: true, message: "Offer withdrawn" });
 
@@ -249,9 +259,8 @@ exports.withdrawOffer = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-// controllers/offer.controller.js
 
-// 1. SEND A COUNTER OFFER (Customer or Worker can call this)
+// SEND A COUNTER OFFER (Customer or Worker)
 exports.sendCounterOffer = async (req, res) => {
     try {
         const { offer_id } = req.params;
@@ -262,7 +271,6 @@ exports.sendCounterOffer = async (req, res) => {
             return res.status(400).json({ message: "counter_price is required" });
         }
 
-        // Fetch the base offer and its task details
         const [offers] = await pool.query(
             `SELECT o.*, t.customer_id 
              FROM task_offers o
@@ -276,8 +284,6 @@ exports.sendCounterOffer = async (req, res) => {
         }
 
         const offer = offers[0];
-
-        // Authorization check: User must be either the task's customer OR the offer's worker
         const isCustomer = offer.customer_id === userId;
         const isWorker = offer.from_user_id === userId;
 
@@ -289,12 +295,6 @@ exports.sendCounterOffer = async (req, res) => {
             return res.status(400).json({ message: "Cannot counter-offer on a closed negotiation" });
         }
 
-        /* 
-          CRITICAL STEP: 
-          Instead of creating a brand new row which clusters the table, 
-          we update the existing offer row with the new counter-price 
-          and track who made this latest change!
-        */
         await pool.query(
             `UPDATE task_offers 
              SET offer_price = ?, 
@@ -303,6 +303,10 @@ exports.sendCounterOffer = async (req, res) => {
              WHERE id = ?`,
             [counter_price, userId, offer_id]
         );
+
+        // 📝 LOG ACTIVITY: Negotiation Counter Updated
+        const partyRole = isCustomer ? "Customer" : "Worker";
+        await logActivity(req, `${partyRole} updated counter offer negotiation price point to ৳${counter_price}`, "task_offers", offer_id);
 
         res.json({
             success: true,
@@ -315,8 +319,7 @@ exports.sendCounterOffer = async (req, res) => {
     }
 };
 
-
-// 2. ACCEPT NEGOTIATION (Accepts the latest price, whoever sent it)
+// ACCEPT NEGOTIATION
 exports.acceptNegotiation = async (req, res) => {
     try {
         const { offer_id } = req.params;
@@ -346,31 +349,34 @@ exports.acceptNegotiation = async (req, res) => {
             return res.status(400).json({ message: "Offer negotiation is closed" });
         }
 
-        // Prevent a user from accepting their own counter-offer
         if (offer.last_action_by === userId) {
             return res.status(400).json({ 
                 message: "You cannot accept your own offer. Waiting for the other party to respond." 
             });
         }
 
-        // 1. Accept this offer
         await pool.query(
             "UPDATE task_offers SET status = 'accepted' WHERE id = ?",
             [offer_id]
         );
 
-        // 2. Reject all other pending offers on the same task
         await pool.query(
             `UPDATE task_offers SET status = 'rejected'
              WHERE task_id = ? AND id != ? AND status = 'pending'`,
             [offer.task_id, offer_id]
         );
 
-        // 3. Complete the negotiation cycle and mark task as confirmed
         await pool.query(
             "UPDATE tasks SET status = 'confirmed' WHERE id = ?",
             [offer.task_id]
         );
+
+        // 📝 LOG ACTIVITY: Negotiation Accepted 
+        const actorRole = isCustomer ? "Customer" : "Worker";
+        await logActivity(req, `${actorRole} accepted the negotiated price point of ৳${offer.offer_price}`, "task_offers", offer_id);
+        
+        // 📝 LOG ACTIVITY: Task status confirmed via negotiation resolve loop
+        await logActivity(req, `Task confirmed and locked with assigned worker via negotiation`, "tasks", offer.task_id);
 
         res.json({
             success: true,
@@ -379,5 +385,37 @@ exports.acceptNegotiation = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// GET TOTAL CONFIRMED WORKS AMOUNT (Read only - no logging needed)
+exports.getConfirmedEarnings = async (req, res) => {
+    try {
+        const workerId = req.user.id; 
+
+        const [rows] = await pool.query(
+            `SELECT 
+                SUM(COALESCE(o.offer_price, t.initial_price)) AS total_confirmed_amount
+             FROM tasks t
+             INNER JOIN task_offers o ON t.id = o.task_id
+             WHERE o.from_user_id = ? 
+               AND o.status = 'accepted' 
+               AND t.status = 'confirmed'`,
+            [workerId]
+        );
+
+        const totalAmount = rows[0].total_confirmed_amount || 0;
+
+        res.json({
+            success: true,
+            worker_id: workerId,
+            confirmed_amount: parseFloat(totalAmount)
+        });
+
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
     }
 };

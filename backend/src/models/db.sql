@@ -121,3 +121,5 @@ CREATE TABLE activity_logs (
 );
 
 ALTER TABLE task_offers ADD COLUMN last_action_by INT NULL;
+ALTER TABLE task_offers 
+MODIFY COLUMN offer_type ENUM('initial', 'counter') NOT NULL DEFAULT 'initial';
