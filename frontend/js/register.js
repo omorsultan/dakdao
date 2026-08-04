@@ -16,6 +16,7 @@ form.addEventListener("submit", async (e) => {
 
     try {
 
+        //// register.js — নতুন ইউজার বানায়
         const response = await fetch(
           "http://localhost:5000/api/auth/register",
             {
