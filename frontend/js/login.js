@@ -23,14 +23,11 @@ form.addEventListener("submit", async (e) => {
 
         const data = await res.json();
 
-// part of login.js
+// login.js — সফল হলে token সেভ করে redirect করে
         if (data.token) {
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-
-            // 👉 redirect to profile page
-            // window.location.href = "profile.html";
 
             window.location.href = "customer-home.html";
 
