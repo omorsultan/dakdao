@@ -680,14 +680,14 @@
         body.innerHTML = tasks.map(task => {
             const hasOffers = ["negotiating","confirmed"].includes(task.status);
             return `
-                <div class="task-list-item ${activeTaskId === task.id ? 'active' : ''}"
-                     onclick="selectTask(${task.id})"
-                     id="taskItem-${task.id}">
-                    <h4>${esc(task.description.slice(0,55))}${task.description.length > 55 ? "…" : ""}</h4>
+                <div class="task-list-item ৳{activeTaskId === task.id ? 'active' : ''}"
+                     onclick="selectTask(৳{task.id})"
+                     id="taskItem-৳{task.id}">
+                    <h4>৳{esc(task.description.slice(0,55))}৳{task.description.length > 55 ? "…" : ""}</h4>
                     <div class="task-list-meta">
-                        <span class="task-list-loc">${esc(task.location_text || "No location")}</span>
-                        <span class="offer-count-badge ${hasOffers ? 'has-offers' : 'no-offers'}" id="taskBadge-${task.id}">
-                            ${task.status === "confirmed" ? "✓ Confirmed" : task.status === "negotiating" ? "Has offers" : task.status}
+                        <span class="task-list-loc">৳{esc(task.location_text || "No location")}</span>
+                        <span class="offer-count-badge ৳{hasOffers ? 'has-offers' : 'no-offers'}" id="taskBadge-৳{task.id}">
+                            ৳{task.status === "confirmed" ? "✓ Confirmed" : task.status === "negotiating" ? "Has offers" : task.status}
                         </span>
                     </div>
                 </div>`;
@@ -711,7 +711,7 @@
 
         // Highlight in list
         document.querySelectorAll(".task-list-item").forEach(el => el.classList.remove("active"));
-        const item = document.getElementById(`taskItem-${taskId}`);
+        const item = document.getElementById(`taskItem-৳{taskId}`);
         if (item) item.classList.add("active");
 
         // Show loading
@@ -730,12 +730,12 @@
         const task = allTasks.find(t => t.id === taskId);
         if (task) {
             document.getElementById("pageSubtext").textContent =
-                `${task.description.slice(0,60)}${task.description.length > 60 ? "…" : ""}`;
+                `${task.description.slice(0,60)}৳{task.description.length > 60 ? "…" : ""}`;
         }
 
         try {
-            const res = await fetch(`${API}/api/tasks/${taskId}/offers`, {
-                headers: { Authorization: `Bearer ${token}` }
+            const res = await fetch(`৳{API}/api/tasks/৳{taskId}/offers`, {
+                headers: { Authorization: `Bearer ৳{token}` }
             });
             if (!res.ok) throw new Error();
             const data = await res.json();
