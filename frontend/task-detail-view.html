@@ -57,7 +57,7 @@
                         </div>
                         <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-right min-w-[140px]">
                             <p class="text-xs font-bold uppercase tracking-wider text-emerald-700/70">Initial Budget</p>
-                            <p id="task-price" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-0.5">$0.00</p>
+                            <p id="task-price" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-0.5">৳ 0.00</p>
                         </div>
                     </div>
 
@@ -158,10 +158,10 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Your Price ($)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Your Price (৳)</label>
                     <div class="relative rounded-xl shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-400 sm:text-sm">$</span>
+                            <span class="text-gray-400 sm:text-sm">৳</span>
                         </div>
                         <input type="number" id="counter-price-input" class="block w-full pl-7 pr-3 py-2.5 border border-gray-200 rounded-xl text-base focus:outline-indigo-600 font-bold" placeholder="0.00">
                     </div>
@@ -214,7 +214,7 @@
             document.getElementById("nav-task-id").innerText = `Task Reference ID: #${task.id}`;
             document.getElementById("task-header-title").innerText = `Task Summary Block #${task.id}`;
             document.getElementById("task-category").innerText = task.category_name || "General Structural";
-            document.getElementById("task-price").innerText = `$${parseFloat(task.final_display_price || 0).toFixed(2)}`;
+            document.getElementById("task-price").innerText = `৳ ${parseFloat(task.final_display_price || 0).toFixed(2)}`;
             document.getElementById("task-description").innerText = task.description;
             document.getElementById("location-text").innerText = task.location_text;
             document.getElementById("coord-lat").innerText = parseFloat(task.latitude || 0).toFixed(6);
@@ -270,7 +270,7 @@
                             <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0">
                                 <div class="text-left sm:text-right">
                                     <span class="text-[10px] text-gray-400 block font-bold uppercase">Proposed rate</span>
-                                    <span class="text-xl font-black text-emerald-600">$${parseFloat(offer.offer_price).toFixed(2)}</span>
+                                    <span class="text-xl font-black text-emerald-600">৳ ${parseFloat(offer.offer_price).toFixed(2)}</span>
                                 </div>
                                 ${isPending ? `
                                 <div class="flex gap-1.5">
